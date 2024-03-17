@@ -1,5 +1,5 @@
 """ transport_utils.py
-Gets the transportation time using Google Maps API.
+Gets the functions to get transportation time using Google Maps API.
 """
 
 import requests

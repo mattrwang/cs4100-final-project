@@ -3,7 +3,7 @@ Defines WeekPlan class which is the plan for a week with scheduled tasks.
 """
 from task import Task
 from typing import List
-from hill_descent import energyfunction
+from algorithms.hill_descent import energyfunction
 import numpy as np
 
 class WeekPlan:

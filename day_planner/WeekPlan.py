@@ -1,18 +1,19 @@
-""" WeekPlan.py
+""" week_plan.py
 Defines WeekPlan class which is the plan for a week with scheduled tasks.
 """
-from task import Task
+from Task import Task
 from typing import List
-from algorithms.hill_descent import energyfunction
+from hill_descent import energy_function
 import numpy as np
 
 class WeekPlan:
-    def __init__(self, tasks: List[Task], day_start_time: float=9.0, day_end_time:float=17.0):
+    def __init__(self, tasks: List[Task], api_key: str, day_start_time: float=9.0, day_end_time:float=17.0):
         self.tasks = tasks # list of tasks user needs scheduled
+        self.api_key = api_key # api key for Google Maps API
         self.day_start_time = day_start_time # time when planned tasks may begin on each day (military time float, decimal must be factor of 25)
         self.day_end_time = day_end_time # time when planned tasks must end by on each day (military time float, decimal must be factor of 25)
         self.plan = self.generate_random_plan(self.tasks, self.day_start_time, self.day_end_time)
-        self.total_energy = energyfunction(self.plan, self.tasks) # total energy of the week plan
+        self.total_energy = energy_function(self.plan, self.tasks, self.api_key) # total energy of the week plan
     
     def generate_random_plan(self, tasks: List[Task], day_start_time: float=9.0, day_end_time: float=17.0) -> np.array:
         """
@@ -24,14 +25,14 @@ class WeekPlan:
             day_start_time (float): time when planned tasks may begin on each day (military time float, decimal must be factor of 25)
             day_end_time (float): time when planned tasks must emd by on each day (military time float, decimal must be factor of 25)
         Returns:
-            week_plan (np.array): scheduled activites for the week as a 7xn array, each row is day of the week (ordered Sun, Mon, ...) with 15 minute time intervals for the given day timeperiod 
+            plan (np.array): scheduled activites for the week as a 7xn array, each row is day of the week (ordered Sun, Mon, ...) with 15 minute time intervals for the given day timeperiod 
         """ 
         # define a dictionary mapping string day to int day
         day2int = {'sun': 0, 'mon': 1, 'tue':2, 'wed':3, 'thu':4, 'fri':5, 'sat':6}
         # calculate number of 15-minute time intervals for each day
         n = int((day_end_time-day_start_time)*4)
         # intialize the week plan, each timeslot starts as -1
-        plan = np.ones((7, n))*-1
+        plan = np.ones((7, n), dtype=int)*-1
         # save fixed tasks
         fixed_tasks = [(j, t) for j,t in enumerate(tasks) if t.fixed_times is not None]
         # save non-fixed tasks

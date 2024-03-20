@@ -1,7 +1,7 @@
 """ hill_descent.py
 Hill descent algorithms to use for day planning.
 """
-import sys
+
 import numpy as np
 from typing import List
 from Task import Task

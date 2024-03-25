@@ -28,9 +28,9 @@ def energy_function(plan: np.array, tasks: List[Task], api_key: str) -> float:
 	for day in plan:
 		for i in day:
 			if i!=-1:
-				total_energy += tasks[i].pe/4
-	
-	# add percevied energy for transportation time to total energy		
+				total_energy += tasks[i].pe/12
+# REDO wrong, do not use google maps api
+"""	# add percevied energy for transportation time to total energy		
 	for day in plan:
 		# get transitions from task to task in the plan
 		transitions = np.where(np.diff(day) != 0)[0] + 1
@@ -41,11 +41,11 @@ def energy_function(plan: np.array, tasks: List[Task], api_key: str) -> float:
 				task2 = tasks[day[t]]
 				# get transportation time
 				transport_time = get_transport_time(task1.location, task2.location, mode=task2.mode, api_key=api_key)
-				total_energy += (mode2pe[task2.mode]/4*transport_time)
+				total_energy += (mode2pe[task2.mode]/4*transport_time)"""
 	return total_energy
 
-"""
-def HILLDESCENT(maze, start_cell, goal_state, iterations):
+
+def HILLDESCENT(iterations: int, plan: np.array, tasks: List[Task], api_key: str) -> Tuple[plan, new_energy]:
 	'''
 	Fill in this function to implement Hill Descent local search.
 
@@ -61,14 +61,17 @@ def HILLDESCENT(maze, start_cell, goal_state, iterations):
 	If using print statements to debug, please make sure
 	to remove them before your final submisison.
 	'''
-	new_maze = maze.copy()
-	k = maze.shape[0]
-	energy = energyfunction(new_maze, start_cell, goal_state)
+	new_plan = plan.copy()
+	energy = energy_function(new_plan, tasks, api_key)
 	for _ in range(iterations):
-		# pick a random cell to change that is not the goal state
-		r, c = np.random.randint(0, k), np.random.randint(0, k)
+		# pick a random day
+		rand_day = np.random.randint(0,7)
+		# pick a random interval in the date
+		rand_int = np.random.randint(0, rand_day.shape[0])
+		# pick random day and interval in the day while the interval time is long enough a random cell to change that is not the goal state
 		while (r, c) == goal_state:
 			r, c = np.random.randint(0, k), np.random.randint(0, k)
+		
 		# store current jump value at randomly chosen cell
 		old_j = new_maze[r, c]
 		# pick new random jump value
@@ -86,7 +89,7 @@ def HILLDESCENT(maze, start_cell, goal_state, iterations):
 			energy = energyfunction(new_maze, start_cell, goal_state)
 	return new_maze, energy
 
-
+"""
 def HILLDESCENT_RANDOM_RESTART(maze, start_cell, goal_state, iterations, num_searches):
 	'''
 	Fill in this function to implement Hill Descent local search with Random Restarts.

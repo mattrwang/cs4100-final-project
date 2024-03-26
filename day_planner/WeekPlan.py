@@ -40,21 +40,22 @@ class WeekPlan:
                 new_day_plan[i_start-before_transport_ints:i_start] = np.array([(t_i+1) for _ in range(before_transport_ints)])*-1 
                 
                 # update transportation time for first task following this task wtih a new location
-                next_task = abs([i for i in new_day_plan[i_end:] if i!=0 and self.tasks[i-1].location not in [None, task.location]][0])
+                next_tasks = [i for i in new_day_plan[i_end:] if i!=0 and self.tasks[i-1].location not in [None, task.location]]
+                next_task = self.tasks[abs(next_tasks)[0]] if len(next_tasks)>0 else None
                 start_loc = task.location
-                end_loc = self.tasks[next_task-1].location
+                end_loc = self.tasks[next_tasks] if next_task is not None else self.home
                 after_transport_time = get_transport_time(start_loc, end_loc, task.mode, self.api_key)
                 after_transport_ints = math.ceil(after_transport_time/5)
                 # get start index of next task with a new location
-                i_start_next_task = np.argwhere(new_day_plan==next_task)[0][0]
-                # if adding after transportion time requires writing over a task, task cannot be scheduled 
+                i_start_next_task = np.argwhere(new_day_plan==abs(next_tasks)[0])[0][0] if next_task is not None else i_end+np.argwhere(new_day_plan[i_end:]==0)[0][0]
+                # if addingitg after transportion time requires writing over a task, task cannot be scheduled 
                 if np.any(new_day_plan[i_end+1:i_start_next_task]>0):
                     raise
                 # in the time between this task and 
                 # next task at a new location, turn all transport times into free time (0)
                 new_day_plan[i_end+1:i_start_next_task][new_day_plan[i_end+1:i_start_next_task]<0] = 0
                 # add new transportation time before next task at a new location
-                new_day_plan[i_start_next_task-after_transport_ints:i_start_next_task] = np.array([-1*next_task for _ in range(after_transport_ints)])                     
+                new_day_plan[i_start_next_task:i_start_next_task+after_transport_ints] = np.array([-1*next_task if next_task is not None else -1*(t_i+1) for _ in range(after_transport_ints)])                     
                 # set task completion status           
                 status = 1
         except: 

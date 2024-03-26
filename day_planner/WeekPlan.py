@@ -18,50 +18,69 @@ class WeekPlan:
         # self.plan = self.generate_random_plan(self.tasks, self.day_start_time, self.day_end_time)
         # self.total_energy = energy_function(self.plan, self.tasks, self.api_key) # total energy of the week plan
     
+    
     def add_task_to_day(self, day_plan: np.array, t_i: int, task: Task, i_start: int, i_end: int) -> Tuple[np.array, int]:
+        # day plan: array day plan
+        # t_i: index of task to add in self.tasls
+        # task: Task to add
+        # i_start: start interval of the task
+        # i_end: end interval of the task (task scheduled up to this interval, not including)
+
+        # intialize new plan for the day
         new_day_plan = day_plan.copy()
         try:
-            # if adding task to plan requires overwriting another task, task cannot be scheduled 
-            if np.any(new_day_plan[i_start:i_end]>0):
+            # task cannot be added to the day if the task's time interval is occupied by another task
+            if np.all(new_day_plan[i_start:i_end]>0):
                 raise
-            # add task to day plan
+            # assign task to it's given time interval
             new_day_plan[i_start:i_end] = np.array([t_i+1 for _ in range(i_end-i_start)])
-            # calculate transportation time from previous location to task location
             if task.location is not None:
+                # compute transportation time from previous location to current task location
+                # get previous tasks
                 prev_tasks = [i for i in new_day_plan[0:i_start] if i!=0]
-                start_loc = self.home if len(prev_tasks) == 0 else  self.tasks[prev_tasks[-1]].location
-                end_loc = task.location
-                before_transport_time = get_transport_time(start_loc, end_loc, task.mode, self.api_key)
-                # if adding before transportion time requires writing over a task, task cannot be scheduled 
-                # add transportation time to day plan
-                before_transport_ints = math.ceil(before_transport_time/5)
-                if np.any(new_day_plan[i_start-before_transport_ints:i_start]>0):
+                # get location of task that comes right before this task (if this is the first task of the day then previous location is home)
+                start_loc = self.home if len(prev_tasks) == 0 else self.tasks[prev_tasks[-1]-1].location
+                # get number of intervals it will take to get to location of this task
+                to_intvs = math.ceil(get_transport_time(start_loc, task.location, task.mode, self.api_key)/5)
+                # task cannot be scheduled if another task occupies transportation timeslot
+                if np.all(new_day_plan[i_start-to_intvs:i_start]>0):
                     raise
-                new_day_plan[i_start-before_transport_ints:i_start] = np.array([(t_i+1) for _ in range(before_transport_ints)])*-1 
-                
-                # update transportation time for first task following this task wtih a new location
-                next_tasks = [i for i in new_day_plan[i_end:] if i!=0 and self.tasks[i-1].location not in [None, task.location]]
-                next_task = self.tasks[abs(next_tasks)[0]] if len(next_tasks)>0 else None
-                start_loc = task.location
-                end_loc = self.tasks[next_tasks] if next_task is not None else self.home
-                after_transport_time = get_transport_time(start_loc, end_loc, task.mode, self.api_key)
-                after_transport_ints = math.ceil(after_transport_time/5)
-                # get start index of next task with a new location
-                i_start_next_task = np.argwhere(new_day_plan==abs(next_tasks)[0])[0][0] if next_task is not None else i_end+np.argwhere(new_day_plan[i_end:]==0)[0][0]
-                # if addingitg after transportion time requires writing over a task, task cannot be scheduled 
-                if np.any(new_day_plan[i_end+1:i_start_next_task]>0):
-                    raise
-                # in the time between this task and 
-                # next task at a new location, turn all transport times into free time (0)
-                new_day_plan[i_end+1:i_start_next_task][new_day_plan[i_end+1:i_start_next_task]<0] = 0
-                # add new transportation time before next task at a new location
-                new_day_plan[i_start_next_task:i_start_next_task+after_transport_ints] = np.array([-1*next_task if next_task is not None else -1*(t_i+1) for _ in range(after_transport_ints)])                     
-                # set task completion status           
+                # add transportation intervals to day plan
+                new_day_plan[i_start-to_intvs:i_start] = np.array([(t_i+1) for _ in range(to_intvs)])*-1 
+                # update transportation time for first task following this task with a new location
+                # get tasks that come after this task
+                next_tasks = [(t_i, self.tasks[t_i-1].location, i+i_end) for i, t_i in enumerate(new_day_plan[i_end:]) if t_i>0]
+                # get task index, location, and day interval index for next tasks in a new location
+                next_tasks_new_loc = [(t_i, loc, i) for t_i, loc, i in next_tasks if t_i!=0 and loc not in [None, task.location]]
+                if len(next_tasks_new_loc)>0:
+                    next_task_i = next_tasks_new_loc[0][2]
+                    from_intvs = math.ceil(get_transport_time(task.location, next_tasks_new_loc[0][1], self.tasks[next_tasks_new_loc[0][0]-1].mode, self.api_key)/5)
+                    # set from transportation intervals if no tasks exist during this inverval 
+                    if np.all(new_day_plan[next_task_i-from_intvs:next_task_i]<=0):
+                        # set all intervals from end of task to beginign of next time to free time
+                        new_day_plan[i_end:next_task_i] = 0
+                        # add tranportation time from task
+                        new_day_plan[next_task_i-from_intvs:next_task_i] = np.array([next_tasks_new_loc[0][0]*-1 for _ in range(from_intvs)])
+                    # reschedule task if another task occupies transportation intervals
+                    else:
+                        raise
+
+                # check there is enough time to get home from this task if there is no task or another task without a location after it
+                if len(next_tasks_new_loc)==0:
+                    # compute transportation intervals from task to home
+                    from_intvs = math.ceil(get_transport_time(task.location, self.home, task.mode, self.api_key)/5)
+                    # get intervals after this task, either immidately after if this is last task or after next task without a location
+                    after_day_plan = new_day_plan[i_end:] if np.all(new_day_plan[i_end:]==0) else new_day_plan[i_end:][np.nonzero(new_day_plan[i_end:])[0][-1]+1:]
+                    # task cannot be scheduled if it requires more time to get home than time that exists
+                    if after_day_plan.shape[0]>from_intvs:
+                        raise
+                # set status as completed           
                 status = 1
         except: 
-            new_day_plan = day_plan.copy()
-            status = 0
+                new_day_plan = day_plan.copy()
+                status = 0
         return new_day_plan, status
+    
 
     # def valid_plan(self, plan: np.array) -> bool:
     #     # TODO

@@ -72,3 +72,20 @@ def test_add_task_to_day():
     assert status == 0
     assert np.array_equiv(new_day_plan, actual_new_day_plan)
 test_add_task_to_day()
+
+def test_generate_random_plan():
+    home = '34 Halcyon Rd, Newton Centre, MA, 02459'
+    groceries = Task(3, 0.5, '647 Washington St, Newton, MA, 02458', ['sun', 10.0, 10.5], 'driving')
+    work_cafe = Task(4, 1.0, '1334 Boylston Street, Boston, MA 02215', ['sun', None, None], 'driving')
+    study_home = Task(2, 0.416666, home, None, 'driving')
+    tasks = [groceries, work_cafe, study_home]
+    api_key = 'AIzaSyAznW9Pu7RNiFKtvcBBF8V4qukuD0QywZA'
+
+    week_plan = WeekPlan(home, tasks, api_key)
+    plan = week_plan.generate_random_plan(tasks)
+    # check each task is in th eplan for the scpeified time inervals
+    assert np.count_nonzero(plan == 1) == 6
+    assert np.count_nonzero(plan == 2) == 12
+    assert np.count_nonzero(plan == 3) == 5
+
+test_generate_random_plan()

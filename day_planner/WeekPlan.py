@@ -40,7 +40,7 @@ class WeekPlan:
         status = 1
         try:
             # task cannot be added to the day if the task's time interval is occupied by another task
-            if np.all(new_day_plan[i_start:i_end]>0):
+            if np.any(new_day_plan[i_start:i_end]>0):
                 raise
             # assign task to it's given time interval
             new_day_plan[i_start:i_end] = np.array([t_i+1 for _ in range(i_end-i_start)])
@@ -53,7 +53,7 @@ class WeekPlan:
                 # get number of intervals it will take to get to location of this task
                 to_intvs = math.ceil(get_transport_time(start_loc, task.location, task.mode, self.api_key)/5)
                 # task cannot be scheduled if another task occupies transportation timeslot
-                if np.all(new_day_plan[i_start-to_intvs:i_start]>0):
+                if np.any(new_day_plan[i_start-to_intvs:i_start]>0):
                     raise
                 # add transportation intervals to day plan
                 new_day_plan[i_start-to_intvs:i_start] = np.array([(t_i+1) for _ in range(to_intvs)])*-1 
@@ -82,7 +82,7 @@ class WeekPlan:
                     # get intervals after this task, either immidately after if this is last task or after next task without a location
                     after_day_plan = new_day_plan[i_end:] if np.all(new_day_plan[i_end:]==0) else new_day_plan[i_end:][np.nonzero(new_day_plan[i_end:])[0][-1]+1:]
                     # task cannot be scheduled if it requires more time to get home than time that exists
-                    if after_day_plan.shape[0]>from_intvs:
+                    if after_day_plan.shape[0]<from_intvs:
                         raise
         except: 
             new_day_plan = day_plan.copy()
@@ -113,7 +113,7 @@ class WeekPlan:
         # intialize the week plan, each available timeslot is 0
         plan = np.zeros((7, n), dtype=int)
         # save tasks with fixed days and times
-        fixed_time_tasks = [(j, t) for j,t in enumerate(tasks) if t.fixed_time[1] is not None]
+        fixed_time_tasks = [(j, t) for j,t in enumerate(tasks) if t.fixed_time is not None and t.fixed_time[1] is not None]
         # save tasks with fixed days but not times
         fixed_day_tasks = [(j, t) for j,t in enumerate(tasks) if t.fixed_time is not None and t.fixed_time[1] is None]
         # save non-fixed tasks
@@ -124,7 +124,7 @@ class WeekPlan:
             # integer day of task
             day = day2int[task.fixed_time[0]]
             # index of interval start of task
-            i_start = int((task.fixed_time[1]-self.day_start_time)*12)
+            i_start = int(round((task.fixed_time[1]-self.day_start_time)*12, 1))
             # index of interval end of task
             i_end = int((task.fixed_time[2]-task.fixed_time[1])*12)+i_start
             # add task to plan
@@ -143,15 +143,16 @@ class WeekPlan:
                 # get random index of start interval
                 i_start = np.random.randint(0, n)
                 # compute index of end interval
-                i_end = int(task.total_hours*12)+i_start
+                i_end = int(round(task.total_hours*12, 2))+i_start
                 # schedule task at this interval
                 new_day_plan, status = self.add_task_to_day(plan[day], j, task, i_start, i_end)
                 if status == 1:
                     reschedule = False
                     plan[day] = new_day_plan
-          
+
         # schedule remaining activities in random intervals
         for (j, task) in non_fixed_tasks:
+
             reschedule = True
             while reschedule:
                 # get random day of week
@@ -159,12 +160,11 @@ class WeekPlan:
                 # get random index of start interval
                 i_start = np.random.randint(0, n)
                 # compute index of end interval
-                i_end = int(task.total_hours*12)+i_start
+                i_end = int(round(task.total_hours*12,1))+i_start
                 # add task to the day
                 new_day_plan, status = self.add_task_to_day(plan[day], j, task, i_start, i_end)
                 if status == 1:
-                        reschedule = False
-                        plan[day] = new_day_plan
-        
+                    reschedule = False
+                    plan[day] = new_day_plan
         return plan
     

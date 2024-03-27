@@ -20,12 +20,20 @@ class WeekPlan:
     
     
     def add_task_to_day(self, day_plan: np.array, t_i: int, task: Task, i_start: int, i_end: int) -> Tuple[np.array, int]:
-        # day plan: array day plan
-        # t_i: index of task to add in self.tasls
-        # task: Task to add
-        # i_start: start interval of the task
-        # i_end: end interval of the task (task scheduled up to this interval, not including)
+        """
+        Adds a task to a day plan if there are no conflicts with existing tasks in the plan.
+        Adds in transportation time denoted as the negative task index. Transportation from home to first task is scheduled.
+        Trasnportation from the last task to home is ensured to be possible, but not scheduled.
 
+        Args:
+            day_plan (npp.array): plan for the day
+            t_i (int): index of the task 
+            i_start (int): index of start interval of the task
+            i_end (int):index of the end interval of the task (task scheduled up to, not including this interval)
+        Returns:
+            new_day_plan (np.array): new day plan (with the task if it's possible to schedule it)
+            status (int): status of if the task was able to be scheduled
+        """ 
         # intialize new plan for the day
         new_day_plan = day_plan.copy()
         try:

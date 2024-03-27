@@ -15,8 +15,8 @@ class WeekPlan:
         self.api_key = api_key # api key for Google Maps API
         self.day_start_time = day_start_time # time when planned tasks may begin on each day (military time float, decimal must be factor of 25)
         self.day_end_time = day_end_time # time when planned tasks must end by on each day (military time float, decimal must be factor of 25)
-        # self.plan = self.generate_random_plan(self.tasks, self.day_start_time, self.day_end_time)
-        # self.total_energy = energy_function(self.plan, self.tasks, self.api_key) # total energy of the week plan
+        self.plan = None # intialize plan for the week
+        self.total_energy = -1 # intialize total energy of the week plan
     
     
     def add_task_to_day(self, day_plan: np.array, t_i: int, task: Task, i_start: int, i_end: int) -> Tuple[np.array, int]:
@@ -89,11 +89,6 @@ class WeekPlan:
             status = 0
         return new_day_plan, status
     
-
-    # def valid_plan(self, plan: np.array) -> bool:
-    #     # TODO
-    #     return True
-    
     def generate_random_plan(self, tasks: List[Task], day_start_time: float=9.0, day_end_time: float=17.0) -> np.array:
         """
         Generates a random plan with tasks randomly inserted in different timelots.
@@ -143,7 +138,7 @@ class WeekPlan:
                 # get random index of start interval
                 i_start = np.random.randint(0, n)
                 # compute index of end interval
-                i_end = int(round(task.total_hours*12, 2))+i_start
+                i_end = int(round(task.total_hours*12, 1))+i_start
                 # schedule task at this interval
                 new_day_plan, status = self.add_task_to_day(plan[day], j, task, i_start, i_end)
                 if status == 1:
@@ -167,4 +162,30 @@ class WeekPlan:
                     reschedule = False
                     plan[day] = new_day_plan
         return plan
+    
+    def valid_plan(self, plan: np.array) -> bool:
+        day2int = {'sun': 0, 'mon': 1, 'tue':2, 'wed':3, 'thu':4, 'fri':5, 'sat':6}
+        # checks each task is in the plan for the correct amount of time
+        for i, task in enumerate(self.tasks):
+            if not np.count_nonzero(plan == i+1) == round(task.total_hours*12, 1):
+                return False
+        
+        # check that fixed day and time tasks are in correct position
+        fixed_time_tasks = [(j, t) for j,t in enumerate(self.tasks) if t.fixed_time is not None and t.fixed_time[1] is not None]
+        for t in fixed_time_tasks:
+            j = t[0]
+            task = t[1]
+            i_start = int(round((task.fixed_time[1]-self.day_start_time)*12, 1))
+            i_end = int((task.fixed_time[2]-task.fixed_time[1])*12)+i_start
+            plan[day2int[task.fixed_time[0]]][i_start:i_end] = np.ones(i_end-i_start)*(j)
+        # save tasks with fixed days but not times
+        fixed_day_tasks = [(j, t) for j,t in enumerate(self.tasks) if t.fixed_time is not None and t.fixed_time[1] is None]
+        for t in fixed_day_tasks:
+            j = t[0]
+            task = t[1]
+            if not np.count_nonzero(plan[day2int[task.fixed_time[0]]] == j+1) == round(task.total_hours*12, 1):
+                return False
+        # checks there is transport time from home to first location-based task for each day
+        # checks there is time to go home from last location-based task of the day
+        return True
     

@@ -4,7 +4,8 @@ Defines Task class which is one activity a user needs to complete.
 from typing import List, TypeVar
 
 class Task:
-    def __init__(self, pe: int, total_hours: float, location: str = None, fixed_time: List[TypeVar] = None, mode="walking"):
+    def __init__(self, name: str, pe: int, total_hours: float, location: str = None, fixed_time: List[TypeVar] = None, mode="walking"):
+        self.name = name # Description of task
         self.pe = pe # perceived energy taken per hour of working on the task, from 1-10 (1 is a very easy task, 10 is a very draining task)
         self.total_hours = total_hours # total number of hours user needs to work on this task in the week (decimal portion must be in quarters)
         self.location = location # address of the task if the task needs to be completed in a certain location

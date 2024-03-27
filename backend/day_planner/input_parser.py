@@ -4,7 +4,7 @@ import math
 
 
 def input_parser(d):
-    with open("/Users/rupjaisinghani/cs4100-final-project/day_planner/sample_input.csv", "r") as file:
+    with open(d, "r") as file:
         reader = csv.reader(file)
         next(reader)
         tasks = []
@@ -25,11 +25,8 @@ def input_parser(d):
                         fixed_time = [line[4], start_hour+start_decimal, end_hour+end_decimal]
                     else:
                         fixed_time = [line[4], None, None]
-                    task = Task(int(line[1]), hours + decimal, line[2], fixed_time)
-                task = Task(int(line[1]), hours + decimal, line[2])
-            task = Task(int(line[1]), hours + decimal)
+                    task = Task(line[0], int(line[1]), hours + decimal, line[2], fixed_time)
+                task = Task(line[0], int(line[1]), hours + decimal, line[2])
+            task = Task(line[0], int(line[1]), hours + decimal)
             tasks.append(task)
     return tasks
-
-
-input_parser("/Users/rupjaisinghani/cs4100-final-project/day_planner/input")

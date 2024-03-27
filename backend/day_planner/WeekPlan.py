@@ -1,7 +1,7 @@
 """ week_plan.py
 Defines WeekPlan class which is the plan for a week with scheduled tasks.
 """
-from Task import Task
+from task import Task
 from typing import List, Tuple
 # from hill_descent import energy_function
 import numpy as np
@@ -109,7 +109,7 @@ class WeekPlan:
             plan (np.array): scheduled activites for the week as a 7xn array, each row is day of the week (ordered Sun, Mon, ...) with 15 minute time intervals for the given day timeperiod 
         """ 
         # define a dictionary mapping string day to int day
-        day2int = {'sun': 0, 'mon': 1, 'tue':2, 'wed':3, 'thu':4, 'fri':5, 'sat':6}
+        day2int = {'Sunday': 0, 'Monday': 1, 'Tuesday':2, 'Wednesday':3, 'Thursday':4, 'Friday':5, 'Saturday':6}
         # calculate number of 5-minute time intervals for each day
         n = int((day_end_time-day_start_time)*12)
         # intialize the week plan, each available timeslot is 0
@@ -170,7 +170,7 @@ class WeekPlan:
         return plan
     
     def valid_plan(self, plan: np.array) -> bool:
-        day2int = {'sun': 0, 'mon': 1, 'tue':2, 'wed':3, 'thu':4, 'fri':5, 'sat':6}
+        day2int = {'Sunday': 0, 'Monday': 1, 'Tuesday':2, 'Wednesday':3, 'Thursday':4, 'Friday':5, 'Saturday':6}
         # checks each task is in the plan for the correct amount of time
         for i, task in enumerate(self.tasks):
             if not np.count_nonzero(plan == i+1) == round(task.total_hours*12, 1):

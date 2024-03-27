@@ -75,15 +75,22 @@ class WeekPlan:
                     else:
                         raise
 
-                # check there is enough time to get home from this task if there is no task or another task without a location after it
+                # schedule trasportation from this task to home if there is no other task or no task with a new location after added task
                 if len(next_tasks_new_loc)==0:
+                    # get rest of the day after added task
+                    rest_day_plan = new_day_plan[i_end:] 
+                    # get index of rest of day, either right after this task or last task if there are more tasks after this
+                    i_rest = i_end if np.all(new_day_plan[i_end:]<=0) else i_end+np.argmax(rest_day_plan != 0)
+                    # get index to set for transportation to home
+                    i_get_home = -1*(t_i+1) if i_rest==i_end else abs(rest_day_plan[np.nonzero(rest_day_plan)[0][-1]])*-1
                     # compute transportation intervals from task to home
                     from_intvs = math.ceil(get_transport_time(task.location, self.home, task.mode, self.api_key)/5)
-                    # get intervals after this task, either immidately after if this is last task or after next task without a location
-                    after_day_plan = new_day_plan[i_end:] if np.all(new_day_plan[i_end:]==0) else new_day_plan[i_end:][np.nonzero(new_day_plan[i_end:])[0][-1]+1:]
                     # task cannot be scheduled if it requires more time to get home than time that exists
-                    if after_day_plan.shape[0]<from_intvs:
+                    if new_day_plan[i_rest:].shape[0]<from_intvs:
                         raise
+                    rest_day_plan = new_day_plan[i_end:]
+                    rest_day_plan[rest_day_plan.shape[0]-from_intvs:] = i_get_home
+                    new_day_plan[i_end:] = rest_day_plan
         except: 
             new_day_plan = day_plan.copy()
             status = 0
@@ -144,10 +151,9 @@ class WeekPlan:
                 if status == 1:
                     reschedule = False
                     plan[day] = new_day_plan
-
+        
         # schedule remaining activities in random intervals
         for (j, task) in non_fixed_tasks:
-
             reschedule = True
             while reschedule:
                 # get random day of week

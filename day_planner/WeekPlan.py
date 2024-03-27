@@ -36,6 +36,8 @@ class WeekPlan:
         """ 
         # intialize new plan for the day
         new_day_plan = day_plan.copy()
+        # intialize status as complete
+        status = 1
         try:
             # task cannot be added to the day if the task's time interval is occupied by another task
             if np.all(new_day_plan[i_start:i_end]>0):
@@ -82,11 +84,9 @@ class WeekPlan:
                     # task cannot be scheduled if it requires more time to get home than time that exists
                     if after_day_plan.shape[0]>from_intvs:
                         raise
-                # set status as completed           
-                status = 1
         except: 
-                new_day_plan = day_plan.copy()
-                status = 0
+            new_day_plan = day_plan.copy()
+            status = 0
         return new_day_plan, status
     
 
@@ -94,81 +94,77 @@ class WeekPlan:
     #     # TODO
     #     return True
     
-    # def generate_random_plan(self, tasks: List[Task], day_start_time: float=9.0, day_end_time: float=17.0) -> np.array:
-    #     """
-    #     Generates a random plan with tasks randomly inserted in different timelots.
-    #     Fixed time tasks are correctly put in their given timeslot.
+    def generate_random_plan(self, tasks: List[Task], day_start_time: float=9.0, day_end_time: float=17.0) -> np.array:
+        """
+        Generates a random plan with tasks randomly inserted in different timelots.
+        Fixed time tasks are correctly put in their given timeslot.
 
-    #     Args:
-    #         tasks (List[Task]): tasks the user needs scheduled
-    #         day_start_time (float): time when planned tasks may begin on each day (military time float, decimal must be factor of 25)
-    #         day_end_time (float): time when planned tasks must emd by on each day (military time float, decimal must be factor of 25)
-    #     Returns:
-    #         plan (np.array): scheduled activites for the week as a 7xn array, each row is day of the week (ordered Sun, Mon, ...) with 15 minute time intervals for the given day timeperiod 
-    #     """ 
-    #     # define a dictionary mapping string day to int day
-    #     day2int = {'sun': 0, 'mon': 1, 'tue':2, 'wed':3, 'thu':4, 'fri':5, 'sat':6}
-    #     # calculate number of 15-minute time intervals for each day
-    #     n = int((day_end_time-day_start_time)*12)
-    #     # intialize the week plan, each available timeslot is 0
-    #     plan = np.zeros((7, n), dtype=int)
-    #     # save tasks with fixed days and times
-    #     # TODO: order from earlier to later in day
-    #     fixed_time_tasks = [(j, t) for j,t in enumerate(tasks) if t.fixed_time[1] is not None]
-    #     # same tasks with fixed days but not times
-    #     fixed_day_tasks = [(j, t) for j,t in enumerate(tasks) if t.fixed_time is not None and t.fixed_time[1] is None]
-    #     # save non-fixed tasks
-    #     non_fixed_tasks = [(j, t) for j,t in enumerate(tasks) if t.fixed_time is None]
+        Args:
+            tasks (List[Task]): tasks the user needs scheduled
+            day_start_time (float): time when planned tasks may begin on each day (military time float, decimal must be factor of 25)
+            day_end_time (float): time when planned tasks must emd by on each day (military time float, decimal must be factor of 25)
+        Returns:
+            plan (np.array): scheduled activites for the week as a 7xn array, each row is day of the week (ordered Sun, Mon, ...) with 15 minute time intervals for the given day timeperiod 
+        """ 
+        # define a dictionary mapping string day to int day
+        day2int = {'sun': 0, 'mon': 1, 'tue':2, 'wed':3, 'thu':4, 'fri':5, 'sat':6}
+        # calculate number of 5-minute time intervals for each day
+        n = int((day_end_time-day_start_time)*12)
+        # intialize the week plan, each available timeslot is 0
+        plan = np.zeros((7, n), dtype=int)
+        # save tasks with fixed days and times
+        fixed_time_tasks = [(j, t) for j,t in enumerate(tasks) if t.fixed_time[1] is not None]
+        # save tasks with fixed days but not times
+        fixed_day_tasks = [(j, t) for j,t in enumerate(tasks) if t.fixed_time is not None and t.fixed_time[1] is None]
+        # save non-fixed tasks
+        non_fixed_tasks = [(j, t) for j,t in enumerate(tasks) if t.fixed_time is None]
         
-    #     # assign fixed time tasks to their correct day and time 
-    #     for (j, task) in fixed_time_tasks:
-    #         # integer day of task
-    #         day = day2int[task.fixed_time[0]]
-    #         # index of interval start of task
-    #         i_start = int((task.fixed_time[1]-self.day_start_time)*12)
-    #         # index of interval end of task
-    #         i_end = int((task.fixed_time[2]-task.fixed_time[1])*12)+i_start
-    #         # add task to plan
-    #         new_day_plan, status = add_task_to_day(plan[day], j, task, i_start, i_end)
-    #         # save new plan for the day
-    #         plan[day] = new_day_plan
+        # assign fixed time tasks to their correct day and time 
+        for (j, task) in fixed_time_tasks:
+            # integer day of task
+            day = day2int[task.fixed_time[0]]
+            # index of interval start of task
+            i_start = int((task.fixed_time[1]-self.day_start_time)*12)
+            # index of interval end of task
+            i_end = int((task.fixed_time[2]-task.fixed_time[1])*12)+i_start
+            # add task to plan
+            new_day_plan, status = self.add_task_to_day(plan[day], j, task, i_start, i_end)
+            # save new plan for the day
+            plan[day] = new_day_plan
         
-    #     # assign fixed day tasks to their correct day 
-    #     for (j, task) in fixed_time_tasks:
-    #         # intialize variable if the task needs to be rescheduled
-    #         reschedule = True
-    #         # keep finding an interval for the task while the current scheduled time for the task is not valid
-    #         while reschedule:
-    #             # integer day of task
-    #             day = day2int[task.fixed_time[0]]
-    #             # get random index of start interval
-    #             i_start = np.random.randint(0, n)
-    #             # compute index of end interval
-    #             i_end = int(task.total_hours*12)+i_start
-    #             # if the time interval already has a task, reschedule the current task
-    #             if not np.array_equiv(plan[day][i_start:i_end], np.zeros(i_end-i_start)):
-    #                 break
-    #             # schedule task at this interval and add transporation intervals
-    #             new_day_plan, status = self.add_task_to_day(plan[day], j, task, i_start, i_end)
-    #             if status != 1 or not self.valid_plan(np.array(new_day_plan)):
-    #                 reschedule = True
-    #             else:
-    #                 plan[day] = new_day_plan
-    #     """  
-    #     # schedule remaining activities in random intervals
-    #     for (j, task) in non_fixed_tasks:
-    #         # get random day of week
-    #         day = np.random.randint(0, 7)
-    #         # get random index of start interval
-    #         i_start = np.random.randint(0, n)
-    #         # compute index of end interval
-    #         i_end = int(task.total_hours*12)+i_start
-    #         # keep getting random day and start time while there is not enough time to complete task continuously
-    #         while not np.array_equal(plan[day][i_start:i_end], np.array([-1 for _ in range(i_end-i_start)])):
-    #             day = np.random.randint(0, 7)
-    #             i_start = np.random.randint(0, n)
-    #             i_end = int(task.total_hours*12)+i_start
-    #         plan[day][i_start:i_end] = np.array([j for _ in range(i_end-i_start)])"""
-            
-    #     return plan
+        # assign fixed day tasks to their correct day and a random tipe
+        for (j, task) in fixed_day_tasks:
+            # intialize variable if the task needs to be rescheduled
+            reschedule = True
+            # keep finding an interval for the task while the current scheduled time for the task is not valid
+            while reschedule:
+                # integer day of task
+                day = day2int[task.fixed_time[0]]
+                # get random index of start interval
+                i_start = np.random.randint(0, n)
+                # compute index of end interval
+                i_end = int(task.total_hours*12)+i_start
+                # schedule task at this interval
+                new_day_plan, status = self.add_task_to_day(plan[day], j, task, i_start, i_end)
+                if status == 1:
+                    reschedule = False
+                    plan[day] = new_day_plan
+          
+        # schedule remaining activities in random intervals
+        for (j, task) in non_fixed_tasks:
+            reschedule = True
+            while reschedule:
+                # get random day of week
+                day = np.random.randint(0, 7)
+                # get random index of start interval
+                i_start = np.random.randint(0, n)
+                # compute index of end interval
+                i_end = int(task.total_hours*12)+i_start
+                # add task to the day
+                new_day_plan, status = self.add_task_to_day(plan[day], j, task, i_start, i_end)
+                if status == 1:
+                        reschedule = False
+                        plan[day] = new_day_plan
+        
+        return plan
     

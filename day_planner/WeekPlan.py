@@ -185,7 +185,5 @@ class WeekPlan:
             task = t[1]
             if not np.count_nonzero(plan[day2int[task.fixed_time[0]]] == j+1) == round(task.total_hours*12, 1):
                 return False
-        # checks there is transport time from home to first location-based task for each day
-        # checks there is time to go home from last location-based task of the day
         return True
     

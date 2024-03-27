@@ -5,7 +5,6 @@ Gets the functions to get transportation time using Google Maps API.
 import requests    
 from datetime import datetime, timedelta
 
-
 def get_transport_time(start_addr: str, end_addr: str, mode: str, api_key: str, departure_time:int=0) -> float:
     """
         Gets transportation time from the start address to the end address in minutes using the Google Maps API.

@@ -1,9 +1,7 @@
 from WeekPlan import WeekPlan
-from task import Task
+from Task import Task
 import numpy as np
 from input_parser import input_parser
-
-API_KEY = ''
 
 def test_add_task_to_day():
      # case 1: adding a task between two tasks that requires changing transportation time before and after task
@@ -16,14 +14,18 @@ def test_add_task_to_day():
     work_cafe = Task('work cafe', 4, 1.0, '1334 Boylston Street, Boston, MA 02215', ['Sunday', 12.0, 13.0], 'driving')
     walk_park = Task('walk in park', 2, 0.416666, '1094 Beacon St, Newton, MA 02461', None, 'driving')
     tasks = [groceries, work_cafe, walk_park]  
-    week_plan = WeekPlan(home, tasks, API_KEY)
+    week_plan = WeekPlan(home, tasks)
     new_day_plan, status = week_plan.add_task_to_day(day_plan, 2, walk_park, 25, 30)
-    actual_new_day_plan = np.array([0,0,0,0,0,0,0,0,0,0,-1,-1, 
+    actual_new_day_plan_google = np.array([0,0,0,0,0,0,0,0,0,0,-1,-1, 
                         1,1,1,1,1,1,0,0,0,0,0,-3, 
                         -3,3,3,3,3,3,0,0,-2,-2,-2,-2,
                         2,2,2,2,2,2,2,2,2,2,2,2])
+    actual_new_day_plan_est = np.array([0,0,0,0,0,0,0,0,0,0,-1,-1, 
+                        1,1,1,1,1,1,0,0,0,0,0,0, 
+                        -3,3,3,3,3,3,0,0,0,0,-2,-2,
+                        2,2,2,2,2,2,2,2,2,2,2,2])
     assert status == 1
-    assert np.array_equiv(new_day_plan, actual_new_day_plan)
+    assert np.array_equiv(new_day_plan, actual_new_day_plan_est)
 
     # case 2: adding a task as the first/last task of the day before heading home in a location that is not home
     # first
@@ -31,13 +33,17 @@ def test_add_task_to_day():
                          1,1,1,1,1,1,0,0,0,0,0,0,
                          0,0,0,0,0,0,0,0,0,-2,-2,-2,
                          2,2,2,2,2,2,2,2,2,2,2,2])
-    actual_new_day_plan = np.array([-3,3,3,3,3,3,0,0,0,0,-1,-1, 
+    actual_new_day_plan_google = np.array([-3,3,3,3,3,3,0,0,0,0,-1,-1, 
                          1,1,1,1,1,1,0,0,0,0,0,0,
                          0,0,0,0,0,0,0,0,0,-2,-2,-2,
                          2,2,2,2,2,2,2,2,2,2,2,2])
-    assert status == 1
+    actual_new_day_plan_est = np.array([-3,3,3,3,3,3,0,0,0,0,0,-1, 
+                         1,1,1,1,1,1,0,0,0,0,0,0,
+                         0,0,0,0,0,0,0,0,0,-2,-2,-2,
+                         2,2,2,2,2,2,2,2,2,2,2,2])
     new_day_plan, status = week_plan.add_task_to_day(day_plan, 2, walk_park, 1, 6)
-    assert np.array_equiv(new_day_plan, actual_new_day_plan)
+    assert status == 1
+    assert np.array_equiv(new_day_plan, actual_new_day_plan_est)
    
     
     # last
@@ -50,13 +56,17 @@ def test_add_task_to_day():
     walk_park = Task('walk in park', 4, 0.33333, '1109 Beacon St, Newton, MA, 02459', None,'driving')
 
     tasks = [groceries, work_cafe, walk_park]
-    actual_new_day_plan = np.array([0,0,0,0,0,0,0,0,0,0,-1,-1, 
+    actual_new_day_plan_google = np.array([0,0,0,0,0,0,0,0,0,0,-1,-1, 
                          1,1,1,1,1,1,0,0,0,0,0,0,
                          0,0,0,0,0,0,0,0,0,-2,-2,-2,
                          2,2,0,-3,-3,-3,-3,3,3,3,3,-3])
+    actual_new_day_plan_est = np.array([0,0,0,0,0,0,0,0,0,0,-1,-1, 
+                         1,1,1,1,1,1,0,0,0,0,0,0,
+                         0,0,0,0,0,0,0,0,0,-2,-2,-2,
+                         2,2,0,0,0,-3,-3,3,3,3,3,-3])
     new_day_plan, status = week_plan.add_task_to_day(day_plan, 2, walk_park, 43, 47)
     assert status == 1
-    assert np.array_equiv(new_day_plan, actual_new_day_plan)
+    assert np.array_equiv(new_day_plan, actual_new_day_plan_est)
 
     # case 3: adding a task that requires overwriting another task's alloted time (fail)
     day_plan = np.array([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
@@ -76,7 +86,7 @@ def test_generate_random_plan():
     study_home = Task('study', 2, 0.416666, home, None, 'driving')
     tasks = [groceries, work_cafe, study_home]
 
-    week_plan = WeekPlan(home, tasks, API_KEY)
+    week_plan = WeekPlan(home, tasks)
     plan = week_plan.generate_random_plan(tasks)
     # check each task is in th eplan for the specified time intervals
     assert np.count_nonzero(plan == 1) == 6
@@ -93,7 +103,7 @@ def test_valid_plan():
     study_home = Task('study', 2, 0.5, home, None, 'driving')
     tasks = [groceries, work_cafe, study_home]
 
-    week_plan = WeekPlan(home, tasks, API_KEY)
+    week_plan = WeekPlan(home, tasks)
     plan = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, -1, -1, -1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -2, -2, 2, 2, 2, 2,
         2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -132,7 +142,7 @@ def test_valid_plan():
     assert week_plan.valid_plan(plan)
     
     # case 2: missing one interval for task 3 (not valid)
-    week_plan = WeekPlan(home, tasks, API_KEY)
+    week_plan = WeekPlan(home, tasks)
     plan = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, -1, -1, -1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -2, -2, 2, 2, 2, 2,
         2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -172,7 +182,7 @@ def test_valid_plan():
 test_valid_plan()
 
 home = "Davenport Commons B, 696 Columbus Ave, Boston, MA 02118"
-tasks = input_parser("/Users/rupjaisinghani/cs4100-final-project/backend/day_planner/sample_input.csv")
-plan = WeekPlan(home, tasks, API_KEY)
+tasks = input_parser("sample_input.csv")
+plan = WeekPlan(home, tasks)
 
-print(plan.generate_random_plan)
+print(plan.generate_random_plan(tasks))

@@ -1,15 +1,15 @@
 """ week_plan.py
 Defines WeekPlan class which is the plan for a week with scheduled tasks.
 """
-from task import Task
+from Task import Task
 from typing import List, Tuple
 # from hill_descent import energy_function
 import numpy as np
-from get_transport_time import get_transport_time
+from transport_time import estimate_transport_time
 import math
 
 class WeekPlan:
-    def __init__(self, home: str, tasks: List[Task], api_key: str, day_start_time: float=9.0, day_end_time:float=17.0):
+    def __init__(self, home: str, tasks: List[Task], api_key: str=None, day_start_time: float=9.0, day_end_time:float=17.0):
         self.home = home # home address that user needs to start from and end up at 
         self.tasks = tasks # list of tasks user needs scheduled
         self.api_key = api_key # api key for Google Maps API
@@ -51,7 +51,7 @@ class WeekPlan:
                 # get location of task that comes right before this task (if this is the first task of the day then previous location is home)
                 start_loc = self.home if len(prev_tasks) == 0 else self.tasks[prev_tasks[-1]-1].location
                 # get number of intervals it will take to get to location of this task
-                to_intvs = math.ceil(get_transport_time(start_loc, task.location, task.mode, self.api_key)/5)
+                to_intvs = math.ceil(estimate_transport_time(start_loc, task.location, task.mode)/5)
                 # task cannot be scheduled if another task occupies transportation timeslot
                 if np.any(new_day_plan[i_start-to_intvs:i_start]>0):
                     raise
@@ -64,7 +64,7 @@ class WeekPlan:
                 next_tasks_new_loc = [(t_i, loc, i) for t_i, loc, i in next_tasks if t_i!=0 and loc not in [None, task.location]]
                 if len(next_tasks_new_loc)>0:
                     next_task_i = next_tasks_new_loc[0][2]
-                    from_intvs = math.ceil(get_transport_time(task.location, next_tasks_new_loc[0][1], self.tasks[next_tasks_new_loc[0][0]-1].mode, self.api_key)/5)
+                    from_intvs = math.ceil(estimate_transport_time(task.location, next_tasks_new_loc[0][1], self.tasks[next_tasks_new_loc[0][0]-1].mode)/5)
                     # set from transportation intervals if no tasks exist during this inverval 
                     if np.all(new_day_plan[next_task_i-from_intvs:next_task_i]<=0):
                         # set all intervals from end of task to beginign of next time to free time
@@ -84,7 +84,7 @@ class WeekPlan:
                     # get index to set for transportation to home
                     i_get_home = -1*(t_i+1) if i_rest==i_end else abs(rest_day_plan[np.nonzero(rest_day_plan)[0][-1]])*-1
                     # compute transportation intervals from task to home
-                    from_intvs = math.ceil(get_transport_time(task.location, self.home, task.mode, self.api_key)/5)
+                    from_intvs = math.ceil(estimate_transport_time(task.location, self.home, task.mode)/5)
                     # task cannot be scheduled if it requires more time to get home than time that exists
                     if new_day_plan[i_rest:].shape[0]<from_intvs:
                         raise

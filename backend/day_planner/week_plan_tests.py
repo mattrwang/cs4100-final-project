@@ -70,8 +70,8 @@ def test_add_task_to_day():
 
     # case 3: adding a task that requires overwriting another task's alloted time (fail)
     day_plan = np.array([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
-    groceries = Task(3, 1.0, None, ['sun', 9.0, 10.0], 'driving')
-    walk_park = Task(4, 1.0, None, ['sun', 9.0, 10.0],'driving')
+    groceries = Task('groceries', 3, 1.0, None, ['sun', 9.0, 10.0], 'driving')
+    walk_park = Task('walk in park', 4, 1.0, None, ['sun', 9.0, 10.0],'driving')
     tasks = [groceries, walk_park]
     actual_new_day_plan = day_plan
     new_day_plan, status = week_plan.add_task_to_day(day_plan, 1, walk_park, 43, 47)

@@ -2,7 +2,7 @@ from WeekPlan import WeekPlan
 from Task import Task
 import numpy as np
 
-API_KEY = 'AIzaSyAznW9Pu7RNiFKtvcBBF8V4qukuD0QywZA'
+API_KEY = ''
 
 def test_add_task_to_day():
      # case 1: adding a task between two tasks that requires changing transportation time before and after task

@@ -1,6 +1,7 @@
 from WeekPlan import WeekPlan
-from Task import Task
+from task import Task
 import numpy as np
+from input_parser import input_parser
 
 API_KEY = ''
 
@@ -11,9 +12,9 @@ def test_add_task_to_day():
                         0,0,0,0,0,0,0,0,0,0,0,0,
                         2,2,2,2,2,2,2,2,2,2,2,2])
     home = '34 Halcyon Rd, Newton Centre, MA, 02459'
-    groceries = Task(3, 0.5, '647 Washington St, Newton, MA, 02458', ['sun', 10.0, 10.5], 'driving')
-    work_cafe = Task(4, 1.0, '1334 Boylston Street, Boston, MA 02215', ['sun', 12.0, 13.0], 'driving')
-    walk_park = Task(2, 0.416666, '1094 Beacon St, Newton, MA 02461', None, 'driving')
+    groceries = Task('groceries', 3, 0.5, '647 Washington St, Newton, MA, 02458', ['Sunday', 10.0, 10.5], 'driving')
+    work_cafe = Task('work cafe', 4, 1.0, '1334 Boylston Street, Boston, MA 02215', ['Sunday', 12.0, 13.0], 'driving')
+    walk_park = Task('walk in park', 2, 0.416666, '1094 Beacon St, Newton, MA 02461', None, 'driving')
     tasks = [groceries, work_cafe, walk_park]  
     week_plan = WeekPlan(home, tasks, API_KEY)
     new_day_plan, status = week_plan.add_task_to_day(day_plan, 2, walk_park, 25, 30)
@@ -44,9 +45,9 @@ def test_add_task_to_day():
                          1,1,1,1,1,1,0,0,0,0,0,0,
                          0,0,0,0,0,0,0,0,0,-2,-2,-2,
                          2,2,0,0,0,0,0,0,0,0,0,0])
-    groceries = Task(3, 0.5, '647 Washington St, Newton, MA, 02458', ['sun', 10.0, 10.5], 'driving')
-    work_cafe = Task(4, 0.166666, '1334 Boylston Street, Boston, MA 02215', ['sun', 12.0, 12.166666], 'driving')
-    walk_park = Task(4, 0.33333, '1109 Beacon St, Newton, MA, 02459', None,'driving')
+    groceries = Task('groceries', 3, 0.5, '647 Washington St, Newton, MA, 02458', ['Sunday', 10.0, 10.5], 'driving')
+    work_cafe = Task('work cafe', 4, 0.166666, '1334 Boylston Street, Boston, MA 02215', ['Sunday', 12.0, 12.166666], 'driving')
+    walk_park = Task('walk in park', 4, 0.33333, '1109 Beacon St, Newton, MA, 02459', None,'driving')
 
     tasks = [groceries, work_cafe, walk_park]
     actual_new_day_plan = np.array([0,0,0,0,0,0,0,0,0,0,-1,-1, 
@@ -70,9 +71,9 @@ test_add_task_to_day()
 
 def test_generate_random_plan():
     home = '34 Halcyon Rd, Newton Centre, MA, 02459'
-    groceries = Task(3, 0.5, '647 Washington St, Newton, MA, 02458', ['sun', 10.0, 10.5], 'driving')
-    work_cafe = Task(4, 1.0, '1334 Boylston Street, Boston, MA 02215', ['sun', None, None], 'driving')
-    study_home = Task(2, 0.416666, home, None, 'driving')
+    groceries = Task('groceries', 3, 0.5, '647 Washington St, Newton, MA, 02458', ['Sunday', 10.0, 10.5], 'driving')
+    work_cafe = Task('work cafe', 4, 1.0, '1334 Boylston Street, Boston, MA 02215', ['Sunday', None, None], 'driving')
+    study_home = Task('study', 2, 0.416666, home, None, 'driving')
     tasks = [groceries, work_cafe, study_home]
 
     week_plan = WeekPlan(home, tasks, API_KEY)
@@ -87,9 +88,9 @@ test_generate_random_plan()
 def test_valid_plan():
     # case 1: valid plan
     home = '34 Halcyon Rd, Newton Centre, MA, 02459'
-    groceries = Task(3, 0.5, '647 Washington St, Newton, MA, 02458', ['sun', 10.0, 10.5], 'driving')
-    work_cafe = Task(4, 1.0, '1334 Boylston Street, Boston, MA 02215', ['sun', None, None], 'driving')
-    study_home = Task(2, 0.5, home, None, 'driving')
+    groceries = Task('groceries', 3, 0.5, '647 Washington St, Newton, MA, 02458', ['Sunday', 10.0, 10.5], 'driving')
+    work_cafe = Task('work cafe', 4, 1.0, '1334 Boylston Street, Boston, MA 02215', ['Sunday', None, None], 'driving')
+    study_home = Task('study', 2, 0.5, home, None, 'driving')
     tasks = [groceries, work_cafe, study_home]
 
     week_plan = WeekPlan(home, tasks, API_KEY)
@@ -169,3 +170,9 @@ def test_valid_plan():
         0, 0, 0, 0, 0, 0, 0, 0]])
     assert not week_plan.valid_plan(plan)
 test_valid_plan()
+
+home = "Davenport Commons B, 696 Columbus Ave, Boston, MA 02118"
+tasks = input_parser("/Users/rupjaisinghani/cs4100-final-project/backend/day_planner/sample_input.csv")
+plan = WeekPlan(home, tasks, API_KEY)
+
+print(plan.generate_random_plan)

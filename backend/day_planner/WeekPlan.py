@@ -9,7 +9,7 @@ from transport_time import estimate_transport_time
 import math
 
 class WeekPlan:
-    def __init__(self, home: str, tasks: List[Task], api_key: str=None, day_start_time: float=9.0, day_end_time:float=17.0):
+    def __init__(self, home: str, tasks: List[Task], api_key: str='None', day_start_time: float=9.0, day_end_time:float=17.0):
         self.home = home # home address that user needs to start from and end up at 
         self.tasks = tasks # list of tasks user needs scheduled
         self.api_key = api_key # api key for Google Maps API

@@ -1,10 +1,8 @@
 """ hill_descent.py
 Hill descent algorithms to use for day planning.
 """
-
-from ast import Tuple
 import numpy as np
-from typing import List
+from typing import List, Tuple
 from WeekPlan import WeekPlan
 from task import Task
 
@@ -27,7 +25,7 @@ def energy_function(plan: np.array, tasks: List[Task]) -> float:
 	total_energy = np.sum(np.vectorize(lambda x: mode2pe[tasks[abs(x)-1].mode]/12 if x<0 else tasks[x-1].pe/12)(occ_intvs))
 	return total_energy
 
-def swap_tasks(t1: int, t2: int, plan: np.array, week_plan: WeekPlan) -> np.array:
+def swap_tasks(t1: int, t2: int, plan: np.array, week_plan: WeekPlan) -> Tuple[np.array, int]:
 	status = 1
 	old_plan = np.copy(plan)
 	tasks = week_plan.tasks
@@ -67,13 +65,11 @@ def swap_tasks(t1: int, t2: int, plan: np.array, week_plan: WeekPlan) -> np.arra
 	plan[t2_day], status1 = week_plan.add_task_to_day(plan[t2_day], t1-1, tasks[t1-1], t2_start, int(t2_start + tasks[t1-1].total_hours * 12))
 	plan[t1_day], status2 = week_plan.add_task_to_day(plan[t1_day], t2-1, tasks[t2-1], t1_start, int(t1_start + tasks[t2-1].total_hours * 12))
 
-	print(status1, status2)
-
 	if status1 == 1 and status2 == 1:
-		return plan
+		return plan, status
 	else:
 		status = 0
-		return old_plan
+		return old_plan, status
 
 
 # def HILLDESCENT(iterations: int, plan: np.array, tasks: List[Task], api_key: str) -> Tuple[plan, new_energy]:

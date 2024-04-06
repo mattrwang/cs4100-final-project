@@ -1,5 +1,5 @@
 from WeekPlan import WeekPlan
-from Task import Task
+from task import Task
 import numpy as np
 from input_parser import input_parser
 
@@ -180,9 +180,3 @@ def test_valid_plan():
         0, 0, 0, 0, 0, 0, 0, 0]])
     assert not week_plan.valid_plan(plan)
 test_valid_plan()
-
-home = "Davenport Commons B, 696 Columbus Ave, Boston, MA 02118"
-tasks = input_parser("sample_input.csv")
-plan = WeekPlan(home, tasks)
-
-print(plan.generate_random_plan(tasks))

@@ -37,7 +37,7 @@ def get_distance(start_addr: str, end_addr: str):
         distance = -1
     return distance
 
-def get_transport_time_google(start_addr: str, end_addr: str, mode: str, api_key: str, departure_time:int=0) -> float:
+def get_transport_time_google(start_addr: str, end_addr: str, mode: str, api_key: str='None', departure_time:int=0) -> float:
     """
         Gets transportation time from the start address to the end address in minutes using the Google Maps API.
 

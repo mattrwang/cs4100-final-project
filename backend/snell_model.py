@@ -75,6 +75,8 @@ def predict_density(date, time):
     density = model.predict([features])[0]
     return density
 
+# CODE TO CREATE HEATMAPS (commented out to use this file as backend in our web app)
+
 # def generate_predictions(year=2024):
 #     predictions = []
 

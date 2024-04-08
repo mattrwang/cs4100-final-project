@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 from datetime import datetime
 
+# read in and format raw sign in data
 lines_2021 = read_files("backend/snell_density/Snell Data/2021")
 table_2021 = tabulate_days(lines_2021)
 reshaped_table_2021 = table_2021.reshape(-1, 1)
@@ -14,6 +15,7 @@ reshaped_table_2022 = table_2022.reshape(-1, 1)
 
 reshaped_table = np.concatenate((reshaped_table_2021, reshaped_table_2022))
 
+# create a dataframe with the reshaped table
 start_date = "2021-01-01 00:00:00"
 end_date = "2022-12-31 23:00:00"
 
@@ -126,8 +128,10 @@ df["hour"] = df["datetime"].apply(lambda x: x.hour)
 df["day_of_week"] = df["datetime"].apply(lambda x: x.weekday())
 df["is_break"] = df["datetime"].apply(lambda x: x.floor("D") in breaks).astype(int)
 
+# reorder columns
 df = df[["month", "day", "year_after_2021", "hour", "day_of_week", "is_break", "count"]]
 
+# save the dataframe to a csv file
 df.to_csv("backend/snell_density/data.csv", index=False)
 
 # print(len(lines), " items") #1579308

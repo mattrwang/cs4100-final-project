@@ -10,6 +10,7 @@ import theme from "./theme";
 import Home from "./Pages/Home";
 import DayPlanning from "./Pages/DayPlanning";
 import SnellDensity from "./Pages/SnellDensity";
+import Heatmaps from "./Pages/Heatmaps";
 
 export const App = () => (
   <ChakraProvider theme={theme}>
@@ -18,7 +19,8 @@ export const App = () => (
         <Route path="/" element={<Home />}></Route>
         <Route path="/day" element={<DayPlanning />} />
         <Route path="/snell" element={<SnellDensity />} />
-        <Route path="*" element={<Navigate to="/" />} />
+        <Route path="/heatmap" element={<Navigate to="/" />} />
+        <Route path="*" element={<Heatmaps />} />
       </Routes>
     </Router>
   </ChakraProvider>

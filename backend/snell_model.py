@@ -75,72 +75,72 @@ def predict_density(date, time):
     density = model.predict([features])[0]
     return density
 
-def generate_predictions(year=2024):
-    predictions = []
+# def generate_predictions(year=2024):
+#     predictions = []
 
-    start_date = f"{year}-01-01 00:00:00"
-    end_date = f"{year}-12-31 23:00:00"
+#     start_date = f"{year}-01-01 00:00:00"
+#     end_date = f"{year}-12-31 23:00:00"
 
-    date_range = pd.date_range(start=start_date, end=end_date, freq="h")
+#     date_range = pd.date_range(start=start_date, end=end_date, freq="h")
 
-    for date in date_range:
-        date_str = date.strftime("%Y-%m-%d")
-        time = int(date.strftime("%H"))
-        density = predict_density(date_str, time)
-        predictions.append(density)
+#     for date in date_range:
+#         date_str = date.strftime("%Y-%m-%d")
+#         time = int(date.strftime("%H"))
+#         density = predict_density(date_str, time)
+#         predictions.append(density)
 
-    return predictions
+#     return predictions
 
-def plot_weekly_heatmaps(predictions, year=2024):
-    weeks_in_year = 52
-    structured_predictions = np.array(predictions).reshape((weeks_in_year, 7, 24))
+# def plot_weekly_heatmaps(predictions, year=2024):
+#     weeks_in_year = 52
+#     structured_predictions = np.array(predictions).reshape((weeks_in_year, 7, 24))
 
-    start_date = pd.Timestamp(f"{year}-01-01")
+#     start_date = pd.Timestamp(f"{year}-01-01")
 
-    for week in range(weeks_in_year):
-        week_start_date = start_date + pd.Timedelta(days=week*7)
-        week_end_date = week_start_date + pd.Timedelta(days=6)
+#     for week in range(weeks_in_year):
+#         week_start_date = start_date + pd.Timedelta(days=week*7)
+#         week_end_date = week_start_date + pd.Timedelta(days=6)
 
-        week_end_date = min(week_end_date, pd.Timestamp(f"{year}-12-31"))
-        title = f"Week {week+1} ({week_start_date.strftime("%b %d")} - {week_end_date.strftime("%b %d")}, {year})"
+#         week_end_date = min(week_end_date, pd.Timestamp(f"{year}-12-31"))
+#         title = f"Week {week+1} ({week_start_date.strftime("%b %d")} - {week_end_date.strftime("%b %d")}, {year})"
 
 
-        plt.figure(figsize=(10, 5))
-        sns.heatmap(structured_predictions[week], cmap="viridis", annot=False, cbar=True)
-        plt.title(title)
-        plt.xlabel("Hour of Day")
-        plt.ylabel("Day of Week")
-        plt.xticks(np.arange(0.5, 24.5, 1), np.arange(1, 25))
-        plt.yticks(np.arange(0.5, 7.5, 1), ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"], rotation=0)
-        save_path = f"snell_density/heatmaps/week_{week+1}.png"
-        plt.savefig(save_path)
-        plt.close()
+#         plt.figure(figsize=(10, 5))
+#         sns.heatmap(structured_predictions[week], cmap="viridis", annot=False, cbar=True)
+#         plt.title(title)
+#         plt.xlabel("Hour of Day")
+#         plt.ylabel("Day of Week")
+#         plt.xticks(np.arange(0.5, 24.5, 1), np.arange(1, 25))
+#         plt.yticks(np.arange(0.5, 7.5, 1), ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"], rotation=0)
+#         save_path = f"snell_density/heatmaps/week_{week+1}.png"
+#         plt.savefig(save_path)
+#         plt.close()
 
-def plot_leftovers(predictions, year=2024):
-    start_date = pd.Timestamp(f"{year}-12-31") - pd.Timedelta(days=len(predictions)//24 - 1)
+# def plot_leftovers(predictions, year=2024):
+#     start_date = pd.Timestamp(f"{year}-12-31") - pd.Timedelta(days=len(predictions)//24 - 1)
 
-    days = len(predictions) // 24
-    structured_predictions = np.array(predictions).reshape((days, 24))
+#     days = len(predictions) // 24
+#     structured_predictions = np.array(predictions).reshape((days, 24))
 
-    plt.figure(figsize=(10, 2 * days))
-    sns.heatmap(structured_predictions, cmap="viridis", annot=False, cbar=True)
+#     plt.figure(figsize=(10, 2 * days))
+#     sns.heatmap(structured_predictions, cmap="viridis", annot=False, cbar=True)
     
-    if days > 1:
-        end_date = start_date + pd.Timedelta(days=days - 1)
-        title = f"Last Days ({start_date.strftime("%b %d")} - {end_date.strftime("%b %d")}, {year})"
-    else:
-        title = f"Last Day ({start_date.strftime("%b %d")}, {year})"
+#     if days > 1:
+#         end_date = start_date + pd.Timedelta(days=days - 1)
+#         title = f"Last Days ({start_date.strftime("%b %d")} - {end_date.strftime("%b %d")}, {year})"
+#     else:
+#         title = f"Last Day ({start_date.strftime("%b %d")}, {year})"
     
-    plt.title(title)
-    plt.xlabel("Hour of Day")
-    plt.ylabel("Day")
-    plt.xticks(np.arange(0.5, 24.5, 1), np.arange(1, 25))
-    plt.yticks(np.arange(0.5, days + 0.5, 1), ["Mon", "Tue"], rotation=0)
-    save_path = "snell_density/heatmaps/week_53.png"
-    plt.savefig(save_path)
-    plt.close()
+#     plt.title(title)
+#     plt.xlabel("Hour of Day")
+#     plt.ylabel("Day")
+#     plt.xticks(np.arange(0.5, 24.5, 1), np.arange(1, 25))
+#     plt.yticks(np.arange(0.5, days + 0.5, 1), ["Mon", "Tue"], rotation=0)
+#     save_path = "snell_density/heatmaps/week_53.png"
+#     plt.savefig(save_path)
+#     plt.close()
 
 
-predictions = generate_predictions()
-plot_weekly_heatmaps(predictions[:52*7*24])
-plot_leftovers(predictions[52*7*24:])
+# predictions = generate_predictions()
+# plot_weekly_heatmaps(predictions[:52*7*24])
+# plot_leftovers(predictions[52*7*24:])

@@ -6,10 +6,12 @@ import {
   HStack,
   Heading,
   Select,
-  Text,
   VStack,
   useToast,
+  Text,
+  Link,
 } from "@chakra-ui/react";
+import { Link as RouterLink } from "react-router-dom";
 import Navbar from "../Components/Navbar";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -60,6 +62,11 @@ const SnellDensity = () => {
         console.error("Error:", error);
       }
     }
+  };
+
+  const reset = () => {
+    setSubmitted(false);
+    setPredicted(false);
   };
 
   return (
@@ -114,6 +121,18 @@ const SnellDensity = () => {
             <Button mt="50px" colorScheme="nured" type="submit" color="white">
               Predict
             </Button>
+            <Text mt="4" textAlign="center">
+              Or, click{" "}
+              <Link
+                as={RouterLink}
+                to="/heatmaps"
+                color="nured.300"
+                fontWeight="bold"
+              >
+                here
+              </Link>{" "}
+              to view heatmaps
+            </Text>
           </Flex>
         </form>
       )}
@@ -136,6 +155,9 @@ const SnellDensity = () => {
           <Text textAlign="center" pt="10px">
             {density.toFixed(0)} new people
           </Text>
+          <Button mt="20px" onClick={reset}>
+            Predict again
+          </Button>
         </Flex>
       )}
     </Flex>

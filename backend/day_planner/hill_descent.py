@@ -4,7 +4,7 @@ Hill descent algorithms to use for day planning.
 import numpy as np
 from typing import List, Tuple
 from WeekPlan import WeekPlan
-from task import Task
+from Task import Task
 
 def energy_function(plan: np.array, tasks: List[Task]) -> float:
 	"""

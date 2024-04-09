@@ -1,6 +1,6 @@
 from WeekPlan import WeekPlan
-from hill_descent import energy_function, swap_tasks
-from Task import Task
+from hill_descent import HILLDESCENT, energy_function, swap_tasks
+from task import Task
 import numpy as np
 
 def test_energy_function():
@@ -56,5 +56,7 @@ plan = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, -1, -1, -1, 1, 1, 1, 1, 1, 1, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0]])
 
-result = swap_tasks(1, 2, plan, week_plan)
+result = HILLDESCENT(100, plan, week_plan)
+## plan1, status = swap_tasks(2, 3, plan, week_plan)
+## result = swap_tasks(1, 2, plan1, week_plan)
 print(result)

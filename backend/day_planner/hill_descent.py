@@ -4,7 +4,7 @@ Hill descent algorithms to use for day planning.
 import numpy as np
 from typing import List, Tuple
 from WeekPlan import WeekPlan
-from Task import Task
+from task import Task
 
 def energy_function(plan: np.array, tasks: List[Task]) -> float:
 	"""
@@ -44,6 +44,7 @@ def swap_tasks(t1: int, t2: int, plan: np.array, week_plan: WeekPlan) -> Tuple[n
 				t2_day = i
 				break
 
+	print(t1, t2)
 	t1_start = np.where(plan[t1_day] == t1)[0][0]
 	t2_start = np.where(plan[t2_day] == t2)[0][0]
 
@@ -56,10 +57,10 @@ def swap_tasks(t1: int, t2: int, plan: np.array, week_plan: WeekPlan) -> Tuple[n
 			plan[t2_day][i] = 0
 	
 	i,j = t1_start, t2_start
-	while plan[t1_day][i] == t1 or plan[t1_day][i] < 0:
+	while (i < len(plan[t1_day]) and (plan[t1_day][i] == t1 or plan[t1_day][i] < 0)):
 		plan[t1_day][i] = 0
 		i += 1
-	while plan[t2_day][j] == t2 or plan[t2_day][j] < 0:
+	while (j < len(plan[t2_day]) and (plan[t2_day][j] == t2 or plan[t2_day][j] < 0)):
 		plan[t2_day][j] = 0
 		j += 1
 	
@@ -74,23 +75,24 @@ def swap_tasks(t1: int, t2: int, plan: np.array, week_plan: WeekPlan) -> Tuple[n
 
 
 def HILLDESCENT(iterations: int, plan: np.array, week_plan: WeekPlan) -> Tuple[np.array, float]:
-    new_plan = plan.copy()
-    energy = energy_function(new_plan, week_plan.tasks)
-    for _ in range(iterations):
-        t1 = np.random.randint(len(week_plan.tasks))
-        t2 = np.random.randint(len(week_plan.tasks))
-        new_plan, status = swap_tasks(t1, t2, new_plan, week_plan)
-        while status == 0:
-            t1 = np.random.randint(len(week_plan.tasks))
-            t2 = np.random.randint(len(week_plan.tasks))
-            new_plan, status = swap_tasks(t1, t2, new_plan, week_plan)
-
-        new_energy = energy_function(new_plan, week_plan.tasks)
-        if energy > new_energy:
-            energy = new_energy
-        else:
-            new_plan = plan
-    return new_plan, energy
+	new_plan = np.copy(plan)
+	energy = energy_function(new_plan, week_plan.tasks)
+	for _ in range(iterations):
+		t1 = np.random.randint(1, len(week_plan.tasks)+1)
+		t2 = np.random.randint(1, len(week_plan.tasks)+1)
+		new_plan, status = swap_tasks(t1, t2, new_plan, week_plan)
+		while status == 0:
+			t1 = np.random.randint(1, len(week_plan.tasks)+1)
+			t2 = np.random.randint(1, len(week_plan.tasks)+1)
+			new_plan, status = swap_tasks(t1, t2, new_plan, week_plan)
+			
+		new_energy = energy_function(new_plan, week_plan.tasks)
+		if energy > new_energy:
+			energy = new_energy
+		else:
+			new_plan = plan	
+		print(new_plan, energy)
+	return new_plan, energy
 
 """
 def HILLDESCENT_RANDOM_RESTART(maze, start_cell, goal_state, iterations, num_searches):

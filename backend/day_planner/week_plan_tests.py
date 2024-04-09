@@ -1,5 +1,5 @@
 from WeekPlan import WeekPlan
-from Task import Task
+from task import Task
 import numpy as np
 from input_parser import input_parser
 

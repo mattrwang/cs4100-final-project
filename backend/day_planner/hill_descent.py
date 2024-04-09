@@ -4,7 +4,7 @@ Hill descent algorithms to use for day planning.
 import numpy as np
 from typing import List, Tuple
 from WeekPlan import WeekPlan
-from task import Task
+from Task import Task
 
 def energy_function(plan: np.array, tasks: List[Task]) -> float:
 	"""
@@ -72,49 +72,24 @@ def swap_tasks(t1: int, t2: int, plan: np.array, week_plan: WeekPlan) -> Tuple[n
 		return old_plan, status
 
 
-# def HILLDESCENT(iterations: int, plan: np.array, tasks: List[Task], api_key: str) -> Tuple[plan, new_energy]:
-# 	'''
-# 	Fill in this function to implement Hill Descent local search.
+def HILLDESCENT(iterations: int, plan: np.array, week_plan: WeekPlan) -> Tuple[np.array, float]:
+    new_plan = plan.copy()
+    energy = energy_function(new_plan, week_plan.tasks)
+    for _ in range(iterations):
+        t1 = np.random.randint(len(week_plan.tasks))
+        t2 = np.random.randint(len(week_plan.tasks))
+        new_plan, status = swap_tasks(t1, t2, new_plan, week_plan)
+        while status == 0:
+            t1 = np.random.randint(len(week_plan.tasks))
+            t2 = np.random.randint(len(week_plan.tasks))
+            new_plan, status = swap_tasks(t1, t2, new_plan, week_plan)
 
-# 	Your function should return the best solution found, 
-# 	which should be a tuple containing 2 elements:
-
-# 	1. The best maze found, which is a 2-dimensional numpy array.
-# 	2. The energy of the best maze found.
-
-# 	Note that you should make a local copy of the maze 
-# 	before making any changes to it.
-
-# 	If using print statements to debug, please make sure
-# 	to remove them before your final submisison.
-# 	'''
-# 	new_plan = plan.copy()
-# 	energy = energy_function(new_plan, tasks, api_key)
-# 	for _ in range(iterations):
-# 		# pick a random day
-# 		rand_day = np.random.randint(0,7)
-# 		# pick a random interval in the date
-# 		rand_int = np.random.randint(0, rand_day.shape[0])
-# 		# pick random day and interval in the day while the interval time is long enough a random cell to change that is not the goal state
-# 		while (r, c) == goal_state:
-# 			r, c = np.random.randint(0, k), np.random.randint(0, k)
-		
-# 		# store current jump value at randomly chosen cell
-# 		old_j = new_maze[r, c]
-# 		# pick new random jump value
-# 		new_j = np.random.randint(1, k)
-# 		# set randomly chosen cell's jump value to new jump value
-# 		new_maze[r, c] = new_j
-# 		# get new energy of the maze
-# 		new_energy = energyfunction(new_maze, start_cell, goal_state)
-# 		# retain the change if the energy is lower
-# 		if energy > new_energy:
-# 			energy = new_energy
-# 		# otherwise reverse the change
-# 		else:
-# 			new_maze[r, c] = old_j
-# 			energy = energyfunction(new_maze, start_cell, goal_state)
-# 	return new_maze, energy
+        new_energy = energy_function(new_plan, week_plan.tasks)
+        if energy > new_energy:
+            energy = new_energy
+        else:
+            new_plan = plan
+    return new_plan, energy
 
 """
 def HILLDESCENT_RANDOM_RESTART(maze, start_cell, goal_state, iterations, num_searches):

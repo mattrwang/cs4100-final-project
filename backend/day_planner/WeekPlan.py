@@ -1,7 +1,7 @@
 """ week_plan.py
 Defines WeekPlan class which is the plan for a week with scheduled tasks.
 """
-from task import Task
+from Task import Task
 from typing import List, Tuple
 # from hill_descent import energy_function
 import numpy as np

@@ -20,9 +20,10 @@ def energy_function(plan: np.array, tasks: List[Task]) -> float:
 	# define dictionary that maps perceived energy per hour of doing each mode of transportation
 	mode2pe = {'transit':4, 'walking':5 ,'driving':3 , 'bicycling':5}
 	# get intervals occupied by tasks or transportation 
-	occ_intvs = plan[np.nonzero(plan.flatten())]
+	occ_intvs = [i for i in plan.flatten() if i!=0]
 	# compute total energy
-	total_energy = np.sum(np.vectorize(lambda x: mode2pe[tasks[abs(x)-1].mode]/12 if x<0 else tasks[x-1].pe/12)(occ_intvs))
+	total_energy = sum([mode2pe[tasks[abs(i)-1].mode]/12 if i<0 else tasks[i-1].pe/12 for i in occ_intvs])
+	# total_energy = np.sum(np.vectorize(lambda x: mode2pe[tasks[abs(x)-1].mode]/12 if x<0 else tasks[x-1].pe/12)(occ_intvs))
 	return total_energy
 
 def swap_tasks(t1: int, t2: int, plan: np.array, week_plan: WeekPlan) -> Tuple[np.array, int]:

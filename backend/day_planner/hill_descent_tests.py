@@ -11,8 +11,7 @@ def test_energy_function():
 
     actual_total_energy = 3*3/12+3*3/12+5/12+2*4/12
     assert actual_total_energy == energy_function(plan, tasks)
-    print(actual_total_energy)
-##test_energy_function()
+test_energy_function()
 
 home = '34 Halcyon Rd, Newton Centre, MA, 02459'
 groceries = Task('groceries', 3, 0.5, '647 Washington St, Newton, MA, 02458', ['Sunday', 10.0, 10.5], 'driving')

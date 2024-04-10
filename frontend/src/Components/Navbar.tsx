@@ -19,7 +19,7 @@ const Navbar = () => {
       </RouterLink>
       <Spacer />
       <Flex gap={4}>
-        <Button
+        {/* <Button
           colorScheme="nured"
           color="white"
           width="125px"
@@ -27,7 +27,7 @@ const Navbar = () => {
           to="/day"
         >
           Day Planning
-        </Button>
+        </Button> */}
         <Button
           colorScheme="nured"
           color="white"

@@ -28,70 +28,73 @@ def energy_function(plan: np.array, tasks: List[Task]) -> float:
 
 def swap_tasks(t1: int, t2: int, plan: np.array, week_plan: WeekPlan) -> Tuple[np.array, int]:
 	status = 1
-	old_plan = np.copy(plan)
+	new_plan = np.copy(plan)
 	tasks = week_plan.tasks
 	t1_day = 0
 	t2_day = 0
-	for i in range(len(plan)):
-		for j in plan[i]:
+	for i in range(len(new_plan)):
+		for j in new_plan[i]:
 			if j == t1:
 				t1_day = i
 				break
 	
-	for i in range(len(plan)):
-		for j in plan[i]:
+	for i in range(len(new_plan)):
+		for j in new_plan[i]:
 			if j == t2:
 				t2_day = i
 				break
 
 	print(t1, t2)
-	t1_start = np.where(plan[t1_day] == t1)[0][0]
-	t2_start = np.where(plan[t2_day] == t2)[0][0]
+	t1_start = np.where(new_plan[t1_day] == t1)[0][0]
+	t2_start = np.where(new_plan[t2_day] == t2)[0][0]
 
 	for i in range(t1_start):
-		if plan[t1_day][i] == -t1:
-			plan[t1_day][i] = 0
+		if new_plan[t1_day][i] == -t1:
+			new_plan[t1_day][i] = 0
 
 	for i in range(t2_start):
-		if plan[t2_day][i] == -t2:
-			plan[t2_day][i] = 0
+		if new_plan[t2_day][i] == -t2:
+			new_plan[t2_day][i] = 0
 	
 	i,j = t1_start, t2_start
-	while (i < len(plan[t1_day]) and (plan[t1_day][i] == t1 or plan[t1_day][i] < 0)):
-		plan[t1_day][i] = 0
+	while (i < len(new_plan[t1_day]) and (new_plan[t1_day][i] == t1 or new_plan[t1_day][i] < 0)):
+		new_plan[t1_day][i] = 0
 		i += 1
-	while (j < len(plan[t2_day]) and (plan[t2_day][j] == t2 or plan[t2_day][j] < 0)):
-		plan[t2_day][j] = 0
+	while (j < len(new_plan[t2_day]) and (new_plan[t2_day][j] == t2 or new_plan[t2_day][j] < 0)):
+		new_plan[t2_day][j] = 0
 		j += 1
 	
-	plan[t2_day], status1 = week_plan.add_task_to_day(plan[t2_day], t1-1, tasks[t1-1], t2_start, int(t2_start + tasks[t1-1].total_hours * 12))
-	plan[t1_day], status2 = week_plan.add_task_to_day(plan[t1_day], t2-1, tasks[t2-1], t1_start, int(t1_start + tasks[t2-1].total_hours * 12))
+	new_plan[t2_day], status1 = week_plan.add_task_to_day(new_plan[t2_day], t1-1, tasks[t1-1], t2_start, int(t2_start + tasks[t1-1].total_hours * 12))
+	new_plan[t1_day], status2 = week_plan.add_task_to_day(new_plan[t1_day], t2-1, tasks[t2-1], t1_start, int(t1_start + tasks[t2-1].total_hours * 12))
 
-	if status1 == 1 and status2 == 1:
-		return plan, status
+	if status1 == 1 and status2 == 1 and week_plan.valid_plan(new_plan):
+		return new_plan, status
 	else:
 		status = 0
-		return old_plan, status
+		return plan, status
 
 
 def HILLDESCENT(iterations: int, plan: np.array, week_plan: WeekPlan) -> Tuple[np.array, float]:
 	new_plan = np.copy(plan)
-	energy = energy_function(new_plan, week_plan.tasks)
+	tasks = week_plan.tasks
+	energy = energy_function(new_plan, tasks)
+	fixed_time_tasks = [t for t in tasks if t.fixed_time is not None and t.fixed_time[1] is not None]
 	for _ in range(iterations):
-		t1 = np.random.randint(1, len(week_plan.tasks)+1)
-		t2 = np.random.randint(1, len(week_plan.tasks)+1)
+		t1 = np.random.randint(1, len(tasks)+1)
+		t2 = np.random.randint(1, len(tasks)+1)
 		new_plan, status = swap_tasks(t1, t2, new_plan, week_plan)
-		while status == 0:
-			t1 = np.random.randint(1, len(week_plan.tasks)+1)
-			t2 = np.random.randint(1, len(week_plan.tasks)+1)
+		while status == 0 or tasks[t1-1] in fixed_time_tasks or tasks[t2-1] in fixed_time_tasks:
+			t1 = np.random.randint(1, len(tasks)+1)
+			t2 = np.random.randint(1, len(tasks)+1)
 			new_plan, status = swap_tasks(t1, t2, new_plan, week_plan)
-			
-		new_energy = energy_function(new_plan, week_plan.tasks)
+
+		new_energy = energy_function(new_plan, tasks)
 		if energy > new_energy:
 			energy = new_energy
 		else:
 			new_plan = plan	
 		print(new_plan, energy)
+		print(week_plan.valid_plan(new_plan))
 	return new_plan, energy
 
 """

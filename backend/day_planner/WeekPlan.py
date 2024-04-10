@@ -9,7 +9,7 @@ from transport_time import estimate_transport_time
 import math
 
 class WeekPlan:
-    def __init__(self, home: str, tasks: List[Task], api_key: str=None, day_start_time: float=9.0, day_end_time:float=19.0):
+    def __init__(self, home: str, tasks: List[Task], api_key: str=None, day_start_time: float=9.0, day_end_time:float=21.0):
         self.home = home # home address that user needs to start from and end up at 
         self.tasks = tasks # list of tasks user needs scheduled
         self.api_key = api_key # api key for Google Maps API
@@ -96,7 +96,7 @@ class WeekPlan:
             status = 0
         return new_day_plan, status
     
-    def generate_random_plan(self, tasks: List[Task], day_start_time: float=9.0, day_end_time: float=19.0) -> np.array:
+    def generate_random_plan(self, tasks: List[Task], day_start_time: float=9.0, day_end_time: float=21.0) -> np.array:
         """
         Generates a random plan with tasks randomly inserted in different timelots.
         Fixed time tasks are correctly put in their given timeslot.
@@ -175,15 +175,7 @@ class WeekPlan:
         for i, task in enumerate(self.tasks):
             if not np.count_nonzero(plan == i+1) == round(task.total_hours*12, 1):
                 return False
-        
-        # check that fixed day and time tasks are in correct position
-        fixed_time_tasks = [(j, t) for j,t in enumerate(self.tasks) if t.fixed_time is not None and t.fixed_time[1] is not None]
-        for t in fixed_time_tasks:
-            j = t[0]
-            task = t[1]
-            i_start = int(round((task.fixed_time[1]-self.day_start_time)*12, 1))
-            i_end = int((task.fixed_time[2]-task.fixed_time[1])*12)+i_start
-            plan[day2int[task.fixed_time[0]]][i_start:i_end] = np.ones(i_end-i_start)*(j)
+
         # save tasks with fixed days but not times
         fixed_day_tasks = [(j, t) for j,t in enumerate(self.tasks) if t.fixed_time is not None and t.fixed_time[1] is None]
         for t in fixed_day_tasks:

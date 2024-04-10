@@ -44,7 +44,6 @@ def swap_tasks(t1: int, t2: int, plan: np.array, week_plan: WeekPlan) -> Tuple[n
 				t2_day = i
 				break
 
-	print(t1, t2)
 	t1_start = np.where(new_plan[t1_day] == t1)[0][0]
 	t2_start = np.where(new_plan[t2_day] == t2)[0][0]
 
@@ -79,6 +78,7 @@ def HILLDESCENT(iterations: int, plan: np.array, week_plan: WeekPlan) -> Tuple[n
 	tasks = week_plan.tasks
 	energy = energy_function(new_plan, tasks)
 	fixed_time_tasks = [t for t in tasks if t.fixed_time is not None and t.fixed_time[1] is not None]
+	energies = []
 	for _ in range(iterations):
 		t1 = np.random.randint(1, len(tasks)+1)
 		t2 = np.random.randint(1, len(tasks)+1)
@@ -93,8 +93,8 @@ def HILLDESCENT(iterations: int, plan: np.array, week_plan: WeekPlan) -> Tuple[n
 			energy = new_energy
 		else:
 			new_plan = plan	
-		print(new_plan, energy)
-		print(week_plan.valid_plan(new_plan))
+		energies.append(energy)
+	print(energies)
 	return new_plan, energy
 
 """

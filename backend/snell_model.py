@@ -104,11 +104,11 @@ def predict_density(date, time):
 #         week_end_date = week_start_date + pd.Timedelta(days=6)
 
 #         week_end_date = min(week_end_date, pd.Timestamp(f"{year}-12-31"))
-#         title = f"Week {week+1} ({week_start_date.strftime("%b %d")} - {week_end_date.strftime("%b %d")}, {year})"
+#         title = f'Week {week+1} ({week_start_date.strftime("%b %d")} - {week_end_date.strftime("%b %d")}, {year})'
 
 
 #         plt.figure(figsize=(10, 5))
-#         sns.heatmap(structured_predictions[week], cmap="viridis", annot=False, cbar=True)
+#         sns.heatmap(structured_predictions[week], cmap="viridis", annot=False, cbar=True, vmin=0, vmax=650)
 #         plt.title(title)
 #         plt.xlabel("Hour of Day")
 #         plt.ylabel("Day of Week")
@@ -129,9 +129,9 @@ def predict_density(date, time):
     
 #     if days > 1:
 #         end_date = start_date + pd.Timedelta(days=days - 1)
-#         title = f"Last Days ({start_date.strftime("%b %d")} - {end_date.strftime("%b %d")}, {year})"
+#         title = f'Last Days ({start_date.strftime("%b %d")} - {end_date.strftime("%b %d")}, {year})'
 #     else:
-#         title = f"Last Day ({start_date.strftime("%b %d")}, {year})"
+#         title = f'Last Day ({start_date.strftime("%b %d")}, {year})'
     
 #     plt.title(title)
 #     plt.xlabel("Hour of Day")
@@ -142,7 +142,22 @@ def predict_density(date, time):
 #     plt.savefig(save_path)
 #     plt.close()
 
+# def plot_calendar_heatmap(predictions, year=2024):
+#     save_path = "snell_density/heatmaps/yearview"
+#     weeks_in_year = 52
+#     structured_predictions = np.array(predictions).reshape((weeks_in_year, 7, 24))
+#     index_mapping = np.arange(1,53,1).reshape((13,4)).transpose()
+#     plt.figure()
+#     plt.tight_layout()
+#     for week in range(weeks_in_year):
+#         plt.subplot(13, 4, index_mapping.flatten()[week])
+#         sns.heatmap(structured_predictions[week], cmap="viridis", annot=False, cbar=False, vmin=0, vmax=650,
+#                     xticklabels=False, yticklabels=False)
+#     plt.subplots_adjust(wspace=0,hspace=0)
+#     plt.savefig(save_path)
+#     plt.close()
 
 # predictions = generate_predictions()
+# plot_calendar_heatmap(predictions[:52*7*24])
 # plot_weekly_heatmaps(predictions[:52*7*24])
 # plot_leftovers(predictions[52*7*24:])

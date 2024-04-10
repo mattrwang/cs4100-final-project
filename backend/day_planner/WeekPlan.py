@@ -96,7 +96,7 @@ class WeekPlan:
             status = 0
         return new_day_plan, status
     
-    def generate_random_plan(self, tasks: List[Task], day_start_time: float=9.0, day_end_time: float=17.0) -> np.array:
+    def generate_random_plan(self, tasks: List[Task], day_start_time: float=9.0, day_end_time: float=19.0) -> np.array:
         """
         Generates a random plan with tasks randomly inserted in different timelots.
         Fixed time tasks are correctly put in their given timeslot.

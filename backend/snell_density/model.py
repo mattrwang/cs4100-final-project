@@ -1,5 +1,9 @@
 import pandas as pd
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense
+from tensorflow.keras.optimizers import Adam
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error
 import pickle
@@ -15,14 +19,32 @@ y = df["count"]
 # split data
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# train model
-model = LinearRegression()
-model.fit(X_train, y_train)
+model = "nn"
 
-# evaluate model
-y_pred = model.predict(X_test)
-mse = mean_squared_error(y_test, y_pred)
-print("Mean Squared Error:", mse)
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
+# train model
+if model == "lr":
+    model = LinearRegression()
+    model.fit(X_train, y_train)
+    # evaluate
+    y_pred = model.predict(X_test)
+    mse = mean_squared_error(y_test, y_pred)
+    print("Mean Squared Error:", mse) 
+elif model == "nn":
+    model = Sequential([
+    Dense(64, input_dim=X_train.shape[1], activation='relu'),  # input layer
+    Dense(32, activation='relu'),  # hidden layer
+    Dense(1)  # output layer
+    ])
+    model.compile(optimizer=Adam(learning_rate=0.001), loss='mean_squared_error')
+    model.fit(X_train, y_train, epochs=100, batch_size=32, verbose=1)
+    # evaluate
+    mse = model.evaluate(X_test, y_test, verbose=0)
+    print("Mean Squared Error:", mse)
+
 
 # save model
 # with open("backend/snell_density/model.pkl", "wb") as f:

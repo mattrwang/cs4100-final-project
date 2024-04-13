@@ -1,7 +1,7 @@
 """ week_plan.py
 Defines WeekPlan class which is the plan for a week with scheduled tasks.
 """
-from task import Task
+from Task import Task
 from typing import List, Tuple
 # from hill_descent import energy_function
 import numpy as np
@@ -9,7 +9,7 @@ from transport_time import estimate_transport_time
 import math
 
 class WeekPlan:
-    def __init__(self, home: str, tasks: List[Task], api_key: str=None, day_start_time: float=9.0, day_end_time:float=17.0):
+    def __init__(self, home: str, tasks: List[Task], api_key: str=None, day_start_time: float=9.0, day_end_time:float=19.0):
         self.home = home # home address that user needs to start from and end up at 
         self.tasks = tasks # list of tasks user needs scheduled
         self.api_key = api_key # api key for Google Maps API
@@ -17,7 +17,6 @@ class WeekPlan:
         self.day_end_time = day_end_time # time when planned tasks must end by on each day (military time float, decimal must be factor of 25)
         self.plan = None # intialize plan for the week
         self.total_energy = -1 # intialize total energy of the week plan
-    
     
     def add_task_to_day(self, day_plan: np.array, t_i: int, task: Task, i_start: int, i_end: int) -> Tuple[np.array, int]:
         """
@@ -96,7 +95,7 @@ class WeekPlan:
             status = 0
         return new_day_plan, status
     
-    def generate_random_plan(self, tasks: List[Task], day_start_time: float=9.0, day_end_time: float=17.0) -> np.array:
+    def generate_random_plan(self, tasks: List[Task], day_start_time: float=9.0, day_end_time: float=19.0) -> np.array:
         """
         Generates a random plan with tasks randomly inserted in different timelots.
         Fixed time tasks are correctly put in their given timeslot.
@@ -133,6 +132,7 @@ class WeekPlan:
             new_day_plan, status = self.add_task_to_day(plan[day], j, task, i_start, i_end)
             # save new plan for the day
             plan[day] = new_day_plan
+        print('fixed day time tasks assigned')
         
         # assign fixed day tasks to their correct day and a random tipe
         for (j, task) in fixed_day_tasks:
@@ -151,11 +151,13 @@ class WeekPlan:
                 if status == 1:
                     reschedule = False
                     plan[day] = new_day_plan
-        
+        print('fixed day tasks assigned')
+
         # schedule remaining activities in random intervals
         for (j, task) in non_fixed_tasks:
             reschedule = True
             while reschedule:
+                print(f"Task {task.name} resheduled")
                 # get random day of week
                 day = np.random.randint(0, 7)
                 # get random index of start interval
@@ -167,6 +169,7 @@ class WeekPlan:
                 if status == 1:
                     reschedule = False
                     plan[day] = new_day_plan
+        print('non fixed tasks assigned')
         return plan
     
     def valid_plan(self, plan: np.array) -> bool:
@@ -175,7 +178,15 @@ class WeekPlan:
         for i, task in enumerate(self.tasks):
             if not np.count_nonzero(plan == i+1) == round(task.total_hours*12, 1):
                 return False
-
+        
+        # check that fixed day and time tasks are in correct position
+        fixed_time_tasks = [(j, t) for j,t in enumerate(self.tasks) if t.fixed_time is not None and t.fixed_time[1] is not None]
+        for t in fixed_time_tasks:
+            j = t[0]
+            task = t[1]
+            i_start = int(round((task.fixed_time[1]-self.day_start_time)*12, 1))
+            i_end = int((task.fixed_time[2]-task.fixed_time[1])*12)+i_start
+            plan[day2int[task.fixed_time[0]]][i_start:i_end] = np.ones(i_end-i_start)*(j)
         # save tasks with fixed days but not times
         fixed_day_tasks = [(j, t) for j,t in enumerate(self.tasks) if t.fixed_time is not None and t.fixed_time[1] is None]
         for t in fixed_day_tasks:

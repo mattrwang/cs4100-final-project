@@ -1,7 +1,7 @@
 from WeekPlan import WeekPlan
 from input_parser import input_parser
 from hill_descent import HILLDESCENT, energy_function, swap_tasks
-from task import Task
+from Task import Task
 import numpy as np
 
 def test_energy_function():

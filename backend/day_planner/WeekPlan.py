@@ -17,7 +17,9 @@ class WeekPlan:
         self.day_end_time = day_end_time # time when planned tasks must end by on each day (military time float, decimal must be factor of 25)
         self.plan = None # intialize plan for the week
         self.total_energy = -1 # intialize total energy of the week plan
+        self.fixed_time_tasks = [i+1 for i, task in enumerate(tasks) if task.fixed_time is not None and task.fixed_time[1] is not None] 
     
+
     def add_task_to_day(self, day_plan: np.array, t_i: int, task: Task, i_start: int, i_end: int) -> Tuple[np.array, int]:
         """
         Adds a task to a day plan if there are no conflicts with existing tasks in the plan.

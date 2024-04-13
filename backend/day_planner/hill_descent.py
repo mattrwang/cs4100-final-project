@@ -74,7 +74,7 @@ def HILLDESCENT(iterations: int, plan: np.array, week_plan: WeekPlan) -> Tuple[n
 
 		t1 = np.random.randint(1, len(week_plan.tasks)+1)
 		t2 = t1
-		while t2 == t1:
+		while t2 == t1 or t1 in week_plan.fixed_time_tasks or t2 in week_plan.fixed_time_tasks:
 			t2 = np.random.randint(1, len(week_plan.tasks)+1)
 
 		new_plan, status = swap_tasks(t1, t2, best_plan, week_plan)
@@ -82,7 +82,7 @@ def HILLDESCENT(iterations: int, plan: np.array, week_plan: WeekPlan) -> Tuple[n
 		while status == 0:
 			t1 = np.random.randint(1, len(week_plan.tasks)+1)
 			t2 = t1
-			while t2 == t1:
+			while t2 == t1 or t1 in week_plan.fixed_time_tasks or t2 in week_plan.fixed_time_tasks:
 				t2 = np.random.randint(1, len(week_plan.tasks)+1)
 			new_plan, status = swap_tasks(t1, t2, best_plan, week_plan)
 		if not all([i in new_plan.flatten() for i in range(1, len(week_plan.tasks)+1)]):

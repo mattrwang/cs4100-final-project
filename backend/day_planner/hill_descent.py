@@ -4,7 +4,7 @@ Hill descent algorithms to use for day planning.
 import numpy as np
 from typing import List, Tuple
 from WeekPlan import WeekPlan
-from Task import Task
+from task import Task
 from copy import deepcopy
 
 def energy_function(plan: np.array, tasks: List[Task]) -> float:
@@ -71,19 +71,19 @@ def HILLDESCENT(iterations: int, plan: np.array, week_plan: WeekPlan) -> Tuple[n
 	best_energy = energy_function(best_plan, week_plan.tasks)
 	
 	for i in range(iterations):
-		print(i)
-
 		t1 = np.random.randint(1, len(week_plan.tasks)+1)
-		t2 = t1
+		t2 = np.random.randint(1, len(week_plan.tasks)+1)
 		while t2 == t1 or t1 in week_plan.fixed_time_tasks or t2 in week_plan.fixed_time_tasks:
+			t1 = np.random.randint(1, len(week_plan.tasks)+1)
 			t2 = np.random.randint(1, len(week_plan.tasks)+1)
 
 		new_plan, status = swap_tasks(t1, t2, best_plan, week_plan)
-				
+	
 		while status == 0:
 			t1 = np.random.randint(1, len(week_plan.tasks)+1)
-			t2 = t1
+			t2 = np.random.randint(1, len(week_plan.tasks)+1)
 			while t2 == t1 or t1 in week_plan.fixed_time_tasks or t2 in week_plan.fixed_time_tasks:
+				t1 = np.random.randint(1, len(week_plan.tasks)+1)
 				t2 = np.random.randint(1, len(week_plan.tasks)+1)
 			new_plan, status = swap_tasks(t1, t2, best_plan, week_plan)
 
@@ -92,6 +92,7 @@ def HILLDESCENT(iterations: int, plan: np.array, week_plan: WeekPlan) -> Tuple[n
 			best_energy = new_energy
 			best_plan = new_plan
 
+		print(best_plan)
 	return best_plan, best_energy
 
 

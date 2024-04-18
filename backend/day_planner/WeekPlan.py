@@ -1,7 +1,7 @@
 """ week_plan.py
 Defines WeekPlan class which is the plan for a week with scheduled tasks.
 """
-from Task import Task
+from task import Task
 from typing import List, Tuple
 import numpy as np
 from transport_time import estimate_transport_time

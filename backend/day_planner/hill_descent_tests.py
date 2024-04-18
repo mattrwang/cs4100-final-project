@@ -4,7 +4,7 @@ Tests for hill descent functions.
 from WeekPlan import WeekPlan
 from input_parser import input_parser
 from hill_descent import HILLDESCENT, energy_function, swap_tasks
-from Task import Task
+from task import Task
 import numpy as np
 
 def test_energy_function():
@@ -18,6 +18,10 @@ def test_energy_function():
 test_energy_function()
 
 def test_swap_tasks():
-    # TODO
     pass
 test_swap_tasks()
+
+tasks = input_parser("backend/day_planner/sample_tasks/task_set_A.csv")
+week_plan = WeekPlan("797 Columbus Ave, Boston, MA 02120", tasks)
+p = week_plan.generate_random_plan(week_plan.tasks)
+print(HILLDESCENT(10, p, week_plan))

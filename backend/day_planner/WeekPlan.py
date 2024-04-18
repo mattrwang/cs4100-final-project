@@ -3,10 +3,10 @@ Defines WeekPlan class which is the plan for a week with scheduled tasks.
 """
 from Task import Task
 from typing import List, Tuple
-# from hill_descent import energy_function
 import numpy as np
 from transport_time import estimate_transport_time
 import math
+import threading      
 
 class WeekPlan:
     def __init__(self, home: str, tasks: List[Task], api_key: str=None, day_start_time: float=9.0, day_end_time:float=19.0):
@@ -27,13 +27,13 @@ class WeekPlan:
         Trasnportation from the last task to home is ensured to be possible, but not scheduled.
 
         Args:
-            day_plan (npp.array): plan for the day
-            t_i (int): index of the task 
-            i_start (int): index of start interval of the task
-            i_end (int):index of the end interval of the task (task scheduled up to, not including this interval)
+            day_plan: plan for the day
+            t_i: index of the task 
+            i_start: index of start interval of the task
+            i_end:index of the end interval of the task (task scheduled up to, not including this interval)
         Returns:
-            new_day_plan (np.array): new day plan (with the task if it's possible to schedule it)
-            status (int): status of if the task was able to be scheduled
+            new_day_plan: new day plan (with the task if it's possible to schedule it)
+            status: status of if the task was able to be scheduled
         """ 
         # intialize new plan for the day
         new_day_plan = day_plan.copy()
@@ -97,15 +97,45 @@ class WeekPlan:
             status = 0
         return new_day_plan, status
     
+    def generate_random_plan_with_timeout(self, tasks: List[Task], day_start_time: float=9.0, day_end_time: float=19.0, timeout_sec=5) -> np.array:
+        """
+        Generates a random plan but times out and re-starts generation if a plan has not been generated in
+         the specified amount fo seconds. 
+
+        Args:
+            tasks: tasks the user needs scheduled
+            day_start_time: time when planned tasks may begin on each day (military time float, decimal must be factor of 25)
+            day_end_time: time when planned tasks must emd by on each day (military time float, decimal must be factor of 25)
+            timeout_sec: number of seconds to wait for plan to generate before generating a different plan
+        Returns:
+            plan: scheduled activites for the week as a 7xn array, each row is day of the week (ordered Sun, Mon, ...) with 15 minute time intervals for the given day timeperiod 
+        """ 
+        result = []
+
+        def target():
+            result.append(self.generate_random_plan(tasks, day_start_time, day_end_time))
+
+        thread = threading.Thread(target=target)
+        thread.start()
+        thread.join(timeout_sec)
+
+        if thread.is_alive():
+            thread.join()  
+
+        if result:  
+            return result[0]  
+        else:
+            return None  
+    
     def generate_random_plan(self, tasks: List[Task], day_start_time: float=9.0, day_end_time: float=19.0) -> np.array:
         """
         Generates a random plan with tasks randomly inserted in different timelots.
         Fixed time tasks are correctly put in their given timeslot.
 
         Args:
-            tasks (List[Task]): tasks the user needs scheduled
-            day_start_time (float): time when planned tasks may begin on each day (military time float, decimal must be factor of 25)
-            day_end_time (float): time when planned tasks must emd by on each day (military time float, decimal must be factor of 25)
+            tasks: tasks the user needs scheduled
+            day_start_time: time when planned tasks may begin on each day (military time float, decimal must be factor of 25)
+            day_end_time: time when planned tasks must emd by on each day (military time float, decimal must be factor of 25)
         Returns:
             plan (np.array): scheduled activites for the week as a 7xn array, each row is day of the week (ordered Sun, Mon, ...) with 15 minute time intervals for the given day timeperiod 
         """ 
@@ -134,7 +164,6 @@ class WeekPlan:
             new_day_plan, status = self.add_task_to_day(plan[day], j, task, i_start, i_end)
             # save new plan for the day
             plan[day] = new_day_plan
-        print('fixed day time tasks assigned')
         
         # assign fixed day tasks to their correct day and a random tipe
         for (j, task) in fixed_day_tasks:
@@ -153,13 +182,11 @@ class WeekPlan:
                 if status == 1:
                     reschedule = False
                     plan[day] = new_day_plan
-        print('fixed day tasks assigned')
 
         # schedule remaining activities in random intervals
         for (j, task) in non_fixed_tasks:
             reschedule = True
             while reschedule:
-                print(f"Task {task.name} resheduled")
                 # get random day of week
                 day = np.random.randint(0, 7)
                 # get random index of start interval
@@ -171,7 +198,6 @@ class WeekPlan:
                 if status == 1:
                     reschedule = False
                     plan[day] = new_day_plan
-        print('non fixed tasks assigned')
         return plan
     
     def valid_plan(self, plan: np.array) -> bool:
@@ -197,4 +223,3 @@ class WeekPlan:
             if not np.count_nonzero(plan[day2int[task.fixed_time[0]]] == j+1) == round(task.total_hours*12, 1):
                 return False
         return True
-    

@@ -68,9 +68,10 @@ def swap_tasks(t1: int, t2: int, plan: np.array, week_plan: WeekPlan) -> Tuple[n
 
 def HILLDESCENT(iterations: int, plan: np.array, week_plan: WeekPlan) -> Tuple[np.array, float]:
 	best_plan = deepcopy(plan)
-	energy = energy_function(best_plan, week_plan.tasks)
+	best_energy = energy_function(best_plan, week_plan.tasks)
 	
-	for _ in range(iterations):
+	for i in range(iterations):
+		print(i)
 
 		t1 = np.random.randint(1, len(week_plan.tasks)+1)
 		t2 = t1
@@ -85,33 +86,36 @@ def HILLDESCENT(iterations: int, plan: np.array, week_plan: WeekPlan) -> Tuple[n
 			while t2 == t1 or t1 in week_plan.fixed_time_tasks or t2 in week_plan.fixed_time_tasks:
 				t2 = np.random.randint(1, len(week_plan.tasks)+1)
 			new_plan, status = swap_tasks(t1, t2, best_plan, week_plan)
-		if not all([i in new_plan.flatten() for i in range(1, len(week_plan.tasks)+1)]):
-			return t1, t2, best_plan, week_plan
 
 		new_energy = energy_function(new_plan, week_plan.tasks)
-		if energy > new_energy:
-			energy = new_energy
+		if best_energy > new_energy:
+			best_energy = new_energy
 			best_plan = new_plan
 
-	return new_plan, energy
+	return best_plan, best_energy
 
 
 def HILLDESCENT_RANDOM_RESTART(num_searches: int, iterations: int, plan: np.array, week_plan: WeekPlan) -> Tuple[np.array, float]:
-	
-	# initialize best plan and energy
-	best_plan = deepcopy(plan)
-	best_energy = 1000000000000
+    # initialize best plan and energy
+    best_plan = deepcopy(plan)
+    best_energy = 1000000000000
 
-	# run hill descent for the given number of searches
-	for _ in range(num_searches):
-		# get the new maze and energy from running hill descent
-		new_plan, new_energy = HILLDESCENT(iterations, best_plan, week_plan)
-		# save current maze and energy as best solution if new energy is lower than current best energy
-		if new_energy < best_energy:
-			best_plan = new_plan
-			best_energy = new_energy
+    # run hill descent for the given number of searches
+    for _ in range(num_searches):
+        # get the new plan and energy from running hill descent
+        print('return', HILLDESCENT(iterations, best_plan, week_plan))
+        new_plan, new_energy = HILLDESCENT(iterations, best_plan, week_plan)
+        # save current plan and energy as best solution if new energy is lower than current best energy
+        if new_energy < best_energy:
+            best_plan = new_plan
+            best_energy = new_energy
+    
+    return best_plan, best_energy
+
+def HILLDESCENT_RANDOM_UPHILL(num_searches: int, iterations: int, plan: np.array, week_plan: WeekPlan) -> Tuple[np.array, float]:
 	
-	return best_plan, best_energy
+	pass
+
 
 """
 def HILLDESCENT_RANDOM_UPHILL(maze, start_cell, goal_state, iterations, probability):

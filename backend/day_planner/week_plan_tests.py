@@ -1,7 +1,10 @@
+""" week_plan_tests.py
+Tests for functions in the WeekPlan class.
+"""
+
 from WeekPlan import WeekPlan
 from Task import Task
 import numpy as np
-from input_parser import input_parser
 
 def test_add_task_to_day():
      # case 1: adding a task between two tasks that requires changing transportation time before and after task
@@ -92,7 +95,6 @@ def test_generate_random_plan():
     assert np.count_nonzero(plan == 1) == 6
     assert np.count_nonzero(plan == 2) == 12
     assert np.count_nonzero(plan == 3) == 5
-
 test_generate_random_plan()
 
 def test_valid_plan():

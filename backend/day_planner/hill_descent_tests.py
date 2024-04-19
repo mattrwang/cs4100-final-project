@@ -1,3 +1,6 @@
+""" hill_descent_tests.py
+Tests for hill descent functions.
+"""
 from WeekPlan import WeekPlan
 from input_parser import input_parser
 from hill_descent import HILLDESCENT, energy_function, swap_tasks
@@ -14,9 +17,11 @@ def test_energy_function():
     assert actual_total_energy == energy_function(plan, tasks)
 test_energy_function()
 
-tasks = input_parser("backend/day_planner/sample_input.csv")
-week_plan = WeekPlan("Davenport Commons B, 696 Columbus Ave, Boston, MA 02118", tasks)
-plan = week_plan.generate_random_plan(tasks)
-print(plan)
-result = HILLDESCENT(20, plan, week_plan)
-print(result)
+def test_swap_tasks():
+    pass
+test_swap_tasks()
+
+tasks = input_parser("backend/day_planner/sample_tasks/task_set_A.csv")
+week_plan = WeekPlan("797 Columbus Ave, Boston, MA 02120", tasks)
+p = week_plan.generate_random_plan(week_plan.tasks)
+print(HILLDESCENT(10, p, week_plan))

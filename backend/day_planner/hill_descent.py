@@ -5,6 +5,7 @@ import numpy as np
 from typing import List, Tuple
 from WeekPlan import WeekPlan
 from task import Task
+from copy import deepcopy
 
 def energy_function(plan: np.array, tasks: List[Task]) -> float:
 	"""
@@ -28,114 +29,95 @@ def energy_function(plan: np.array, tasks: List[Task]) -> float:
 
 def swap_tasks(t1: int, t2: int, plan: np.array, week_plan: WeekPlan) -> Tuple[np.array, int]:
 	status = 1
-	new_plan = np.copy(plan)
+	swapped_plan = deepcopy(plan)
 	tasks = week_plan.tasks
 	t1_day = 0
 	t2_day = 0
-	for i in range(len(new_plan)):
-		for j in new_plan[i]:
-			if j == t1:
-				t1_day = i
-				break
-	
-	for i in range(len(new_plan)):
-		for j in new_plan[i]:
-			if j == t2:
-				t2_day = i
-				break
 
-	t1_start = np.where(new_plan[t1_day] == t1)[0][0]
-	t2_start = np.where(new_plan[t2_day] == t2)[0][0]
+	t1_day = np.where(np.any(swapped_plan == t1, axis=1))[0][0]
+	t2_day = np.where(np.any(swapped_plan == t2, axis=1))[0][0]
+
+	t1_start = np.where(swapped_plan[t1_day] == t1)[0][0]
+	t2_start = np.where(swapped_plan[t2_day] == t2)[0][0]
 
 	for i in range(t1_start):
-		if new_plan[t1_day][i] == -t1:
-			new_plan[t1_day][i] = 0
+		if swapped_plan[t1_day][i] == -t1:
+			swapped_plan[t1_day][i] = 0
 
 	for i in range(t2_start):
-		if new_plan[t2_day][i] == -t2:
-			new_plan[t2_day][i] = 0
+		if swapped_plan[t2_day][i] == -t2:
+			swapped_plan[t2_day][i] = 0
 	
 	i,j = t1_start, t2_start
-	while (i < len(new_plan[t1_day]) and (new_plan[t1_day][i] == t1 or new_plan[t1_day][i] < 0)):
-		new_plan[t1_day][i] = 0
+	
+	while (i < len(plan[t1_day]) and (plan[t1_day][i] == t1 or plan[t1_day][i] < 0)):
+		swapped_plan[t1_day][i] = 0
 		i += 1
-	while (j < len(new_plan[t2_day]) and (new_plan[t2_day][j] == t2 or new_plan[t2_day][j] < 0)):
-		new_plan[t2_day][j] = 0
+	while (j < len(plan[t2_day]) and (plan[t2_day][j] == t2 or plan[t2_day][j] < 0)):
+		swapped_plan[t2_day][j] = 0
 		j += 1
 	
-	new_plan[t2_day], status1 = week_plan.add_task_to_day(new_plan[t2_day], t1-1, tasks[t1-1], t2_start, int(t2_start + tasks[t1-1].total_hours * 12))
-	new_plan[t1_day], status2 = week_plan.add_task_to_day(new_plan[t1_day], t2-1, tasks[t2-1], t1_start, int(t1_start + tasks[t2-1].total_hours * 12))
+	swapped_plan[t2_day], status1 = week_plan.add_task_to_day(swapped_plan[t2_day], t1-1, tasks[t1-1], t2_start, int(t2_start + tasks[t1-1].total_hours * 12))
+	swapped_plan[t1_day], status2 = week_plan.add_task_to_day(swapped_plan[t1_day], t2-1, tasks[t2-1], t1_start, int(t1_start + tasks[t2-1].total_hours * 12))
 
-	if status1 == 1 and status2 == 1 and week_plan.valid_plan(new_plan):
-		return new_plan, status
+	if status1 == 1 and status2 == 1 and week_plan.valid_day_tasks(swapped_plan):
+		return swapped_plan, status
 	else:
 		status = 0
 		return plan, status
 
 
 def HILLDESCENT(iterations: int, plan: np.array, week_plan: WeekPlan) -> Tuple[np.array, float]:
-	new_plan = np.copy(plan)
-	tasks = week_plan.tasks
-	energy = energy_function(new_plan, tasks)
-	fixed_time_tasks = [t for t in tasks if t.fixed_time is not None and t.fixed_time[1] is not None]
-	energies = []
-	for _ in range(iterations):
-		t1 = np.random.randint(1, len(tasks)+1)
-		t2 = np.random.randint(1, len(tasks)+1)
-		new_plan, status = swap_tasks(t1, t2, new_plan, week_plan)
-		while status == 0 or tasks[t1-1] in fixed_time_tasks or tasks[t2-1] in fixed_time_tasks:
-			t1 = np.random.randint(1, len(tasks)+1)
-			t2 = np.random.randint(1, len(tasks)+1)
-			new_plan, status = swap_tasks(t1, t2, new_plan, week_plan)
+	best_plan = deepcopy(plan)
+	best_energy = energy_function(best_plan, week_plan.tasks)
+	non_fixed_tasks = [i for i in range(1, len(week_plan.tasks) + 1) if i not in week_plan.fixed_time_tasks]
+	
+	for i in range(iterations):
+		print(f'iter {i}')
+		t1 = np.random.choice(non_fixed_tasks)
+		t2 = np.random.choice(non_fixed_tasks)
+		while t2 == t1:
+			t2 = np.random.choice(non_fixed_tasks)
 
-		new_energy = energy_function(new_plan, tasks)
-		if energy > new_energy:
-			energy = new_energy
-		else:
-			new_plan = plan	
-		energies.append(energy)
-	print(energies)
-	return new_plan, energy
+		new_plan, status = swap_tasks(t1, t2, best_plan, week_plan)
+	
+		while status == 0:
+			t1 = np.random.choice(non_fixed_tasks)
+			t2 = np.random.choice(non_fixed_tasks)
+			while t2 == t1:
+				np.random.choice(non_fixed_tasks)
+			new_plan, status = swap_tasks(t1, t2, best_plan, week_plan)
+
+		new_energy = energy_function(new_plan, week_plan.tasks)
+		if best_energy > new_energy:
+			best_energy = new_energy
+			best_plan = new_plan
+
+	return best_plan, best_energy
+
+
+def HILLDESCENT_RANDOM_RESTART(num_searches: int, iterations: int, plan: np.array, week_plan: WeekPlan) -> Tuple[np.array, float]:
+    # initialize best plan and energy
+    best_plan = deepcopy(plan)
+    best_energy = 1000000000000
+
+    # run hill descent for the given number of searches
+    for _ in range(num_searches):
+        # get the new plan and energy from running hill descent
+        new_plan, new_energy = HILLDESCENT(iterations, best_plan, week_plan)
+        # save current plan and energy as best solution if new energy is lower than current best energy
+        if new_energy < best_energy:
+            best_plan = new_plan
+            best_energy = new_energy
+    
+    return best_plan, best_energy
+
+def HILLDESCENT_RANDOM_UPHILL(num_searches: int, iterations: int, plan: np.array, week_plan: WeekPlan) -> Tuple[np.array, float]:
+	
+	pass
+
 
 """
-def HILLDESCENT_RANDOM_RESTART(maze, start_cell, goal_state, iterations, num_searches):
-	'''
-	Fill in this function to implement Hill Descent local search with Random Restarts.
-
-	For a given number of searches (num_searches), run hill descent search.
-
-	Keep track of the best solution through all restarts, and return that.
-
-	Your function should return the best solution found, 
-	which should be a tuple containing 2 elements:
-
-	1. The best maze found, which is a 2-dimensional numpy array.
-	2. The energy of the best maze found.
-
-	Note that you should make a local copy of the maze 
-	before making any changes to it.
-
-	You will also need to keep a separate copy of the original maze
-	to use when restarting the algorithm each time.
-
-	If using print statements to debug, please make sure
-	to remove them before your final submisison.
-	'''
-	# initialize best maze and mest energy
-	best_maze = None
-	best_energy = 100000000
-	# run hill descent for the givne number of searches
-	for _ in range(num_searches):
-		# get the new maze and energy from running hill descent
-		new_maze, new_energy = HILLDESCENT(maze, start_cell, goal_state, iterations)
-		# save current maze and energy as best solution if new energy is lower than current best energy
-		if new_energy < best_energy:
-			best_maze = new_maze
-			best_energy = new_energy
-	return best_maze, best_energy
-
-
-
 def HILLDESCENT_RANDOM_UPHILL(maze, start_cell, goal_state, iterations, probability):
 	'''
 	Fill in this function to implement Hill Descent local search with Random uphill steps.

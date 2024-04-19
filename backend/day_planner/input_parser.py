@@ -14,6 +14,7 @@ def input_parser(d):
             min = int(duration[3:])
             decimal = (int(math.ceil(min / 5.0)) * 5)/60
             if line[2] != "":
+                location = str(line[2])
                 if line[4] != "":
                     if line[5] != "":
                         start_hour = int(line[5][:2])
@@ -27,6 +28,6 @@ def input_parser(d):
                         fixed_time = [line[4], None, None]
                     task = Task(line[0], int(line[1]), hours + decimal, line[2], fixed_time)
                 task = Task(line[0], int(line[1]), hours + decimal, line[2])
-            task = Task(line[0], int(line[1]), hours + decimal)
+            task = Task(line[0], int(line[1]), hours + decimal, location=location)
             tasks.append(task)
     return tasks

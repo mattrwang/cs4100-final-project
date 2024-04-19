@@ -4,7 +4,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
 
-def load_model(model_path="snell_density/model.pkl"):
+def load_model(model_path="snell_density/rf.pkl"):
     with open(model_path, "rb") as f:
         model = pickle.load(f)
     return model

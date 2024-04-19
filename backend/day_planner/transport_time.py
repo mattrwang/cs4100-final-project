@@ -20,7 +20,7 @@ def estimate_transport_time(start_addr: str, end_addr: str, mode: str) -> float:
     """ 
     mode2speed = {'walking':3.1, 'bicyling':10.0, 'driving':45.0}
     distance = get_distance(start_addr, end_addr)
-    est_time = distance/mode2speed[mode]*60 if distance >= 0 else -1
+    est_time = distance/mode2speed[mode]*60 if distance > 0 else 0
     return est_time
 
 def get_distance(start_addr: str, end_addr: str) -> float:

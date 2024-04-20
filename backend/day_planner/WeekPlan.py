@@ -62,7 +62,7 @@ class WeekPlan:
                 new_day_plan[i_start - to_intvs:i_start] = np.array([(t_i + 1) for _ in range(to_intvs)]) * -1 
                 
                 # Update transportation time for the first task following this task with a new location
-                next_tasks = [(t_i, self.tasks[t_i - 1].location, i + i_end) for i, t_i in enumerate(new_day_plan[i_end:]) if t_i > 0]
+                next_tasks = [(t_i, self.tasks[t_i].location, i + i_end) for i, t_i in enumerate(new_day_plan[i_end:]) if t_i > 0]
                 next_tasks_new_loc = [(t_i, loc, i) for t_i, loc, i in next_tasks if t_i != 0 and loc not in [None, task.location]]
                 if len(next_tasks_new_loc) > 0:
                     next_task_i = next_tasks_new_loc[0][2]

@@ -85,7 +85,7 @@ def HILLDESCENT(iterations: int, plan: np.array, week_plan: WeekPlan) -> Tuple[n
 			t1 = np.random.choice(non_fixed_tasks)
 			t2 = np.random.choice(non_fixed_tasks)
 			while t2 == t1:
-				np.random.choice(non_fixed_tasks)
+				t2 = np.random.choice(non_fixed_tasks)
 			new_plan, status = swap_tasks(t1, t2, best_plan, week_plan)
 
 		new_energy = energy_function(new_plan, week_plan.tasks)
@@ -112,61 +112,35 @@ def HILLDESCENT_RANDOM_RESTART(num_searches: int, iterations: int, plan: np.arra
     
     return best_plan, best_energy
 
-def HILLDESCENT_RANDOM_UPHILL(num_searches: int, iterations: int, plan: np.array, week_plan: WeekPlan) -> Tuple[np.array, float]:
+def HILLDESCENT_RANDOM_UPHILL(iterations: int, plan: np.array, week_plan: WeekPlan, p: float) -> Tuple[np.array, float]:
+	best_plan = deepcopy(plan)
+	best_energy = energy_function(best_plan, week_plan.tasks)
+	non_fixed_tasks = [i for i in range(1, len(week_plan.tasks) + 1) if i not in week_plan.fixed_time_tasks]
 	
-	pass
+	for i in range(iterations):
+		print(f'iter {i}')
+		t1 = np.random.choice(non_fixed_tasks)
+		t2 = np.random.choice(non_fixed_tasks)
+		while t2 == t1:
+			t2 = np.random.choice(non_fixed_tasks)
 
+		new_plan, status = swap_tasks(t1, t2, best_plan, week_plan)
+	
+		while status == 0:
+			t1 = np.random.choice(non_fixed_tasks)
+			t2 = np.random.choice(non_fixed_tasks)
+			while t2 == t1:
+				t2 = np.random.choice(non_fixed_tasks)
+			new_plan, status = swap_tasks(t1, t2, best_plan, week_plan)
 
-"""
-def HILLDESCENT_RANDOM_UPHILL(maze, start_cell, goal_state, iterations, probability):
-	'''
-	Fill in this function to implement Hill Descent local search with Random uphill steps.
-
-	At each iteration, with probability specified by the probability
-	argument, allow the algorithm to move to a worse state.
-
-	Your function should return the best solution found, 
-	which should be a tuple containing 2 elements:
-
-	1. The best maze found, which is a 2-dimensional numpy array.
-	2. The energy of the best maze found.
-
-	Note that you should make a local copy of the maze
-	before making any changes to it.
-
-	If using print statements to debug, please make sure
-	to remove them before your final submisison.
-	'''
-	#make a copy of current maze
-	new_maze = maze.copy()
-	# store dimension of maze
-	k = maze.shape[0]
-	# get energy of current maze
-	energy = energyfunction(new_maze, start_cell, goal_state)
-	# swap random's cell's jump values if the new maze it produces has a lower energy
-	for _ in range(iterations):
-		# pick a random cell to change that is not the goal state
-		r, c = np.random.randint(0, k), np.random.randint(0, k)
-		while (r, c) == goal_state:
-			r, c = np.random.randint(0, k), np.random.randint(0, k)
-		# store current jump value at randomly chosen cell
-		old_j = new_maze[r, c]
-		# pick new random jump value
-		new_j = np.random.randint(1, k)
-		# set randomly chosen cell's jump value to new jump value
-		new_maze[r, c] = new_j
-		# get energy of new maze
-		new_energy = energyfunction(new_maze, start_cell, goal_state)
-		# choose to retain change anyways with random probability 
-		rand_prob = random.random()
-		retain = rand_prob <= probability
-		# retain the change if the energy is decreased
-		# or with some probability of retaining
-		if energy > new_energy or retain:
-			energy = new_energy
-		# otherwise reverse the change
+		new_energy = energy_function(new_plan, week_plan.tasks)
+		if best_energy > new_energy:
+			best_energy = new_energy
+			best_plan = new_plan
 		else:
-			new_maze[r, c] = old_j
-			energy = energyfunction(new_maze, start_cell, goal_state)
-	return new_maze, energy
-"""
+			rand_prob = np.random.random()
+			retain = rand_prob <= p
+			if best_energy < new_energy and retain:
+				best_energy = new_energy
+				best_plan = new_plan
+	return best_plan, best_energy

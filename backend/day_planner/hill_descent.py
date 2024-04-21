@@ -31,8 +31,6 @@ def swap_tasks(t1: int, t2: int, plan: np.array, week_plan: WeekPlan) -> Tuple[n
 	status = 1
 	swapped_plan = deepcopy(plan)
 	tasks = week_plan.tasks
-	t1_day = 0
-	t2_day = 0
 
 	t1_day = np.where(np.any(swapped_plan == t1, axis=1))[0][0]
 	t2_day = np.where(np.any(swapped_plan == t2, axis=1))[0][0]
@@ -50,16 +48,16 @@ def swap_tasks(t1: int, t2: int, plan: np.array, week_plan: WeekPlan) -> Tuple[n
 	
 	i,j = t1_start, t2_start
 	
-	while (i < len(plan[t1_day]) and (plan[t1_day][i] == t1 or plan[t1_day][i] < 0)):
+	while i < len(swapped_plan[t1_day]) and swapped_plan[t1_day][i] == t1:
 		swapped_plan[t1_day][i] = 0
 		i += 1
-	while (j < len(plan[t2_day]) and (plan[t2_day][j] == t2 or plan[t2_day][j] < 0)):
+	while j < len(swapped_plan[t2_day]) and swapped_plan[t2_day][j] == t2:
 		swapped_plan[t2_day][j] = 0
 		j += 1
-	
-	swapped_plan[t2_day], status1 = week_plan.add_task_to_day(swapped_plan[t2_day], t1-1, tasks[t1-1], t2_start, int(t2_start + tasks[t1-1].total_hours * 12))
-	swapped_plan[t1_day], status2 = week_plan.add_task_to_day(swapped_plan[t1_day], t2-1, tasks[t2-1], t1_start, int(t1_start + tasks[t2-1].total_hours * 12))
-
+	new_t2_day, status1 = week_plan.add_task_to_day(swapped_plan[t2_day], t1-1, tasks[t1-1], t2_start, round(t2_start + tasks[t1-1].total_hours * 12))
+	new_t1_day, status2 = week_plan.add_task_to_day(swapped_plan[t1_day], t2-1, tasks[t2-1], t1_start, round(t1_start + tasks[t2-1].total_hours * 12))
+	swapped_plan[t2_day] = new_t2_day
+	swapped_plan[t1_day] = new_t1_day
 	if status1 == 1 and status2 == 1 and week_plan.valid_day_tasks(swapped_plan):
 		return swapped_plan, status
 	else:
@@ -78,7 +76,6 @@ def HILLDESCENT(iterations: int, plan: np.array, week_plan: WeekPlan) -> Tuple[n
 		t2 = np.random.choice(non_fixed_tasks)
 		while t2 == t1:
 			t2 = np.random.choice(non_fixed_tasks)
-
 		new_plan, status = swap_tasks(t1, t2, best_plan, week_plan)
 	
 		while status == 0:
@@ -132,7 +129,6 @@ def HILLDESCENT_RANDOM_UPHILL(iterations: int, plan: np.array, week_plan: WeekPl
 			while t2 == t1:
 				t2 = np.random.choice(non_fixed_tasks)
 			new_plan, status = swap_tasks(t1, t2, best_plan, week_plan)
-
 		new_energy = energy_function(new_plan, week_plan.tasks)
 		if best_energy > new_energy:
 			best_energy = new_energy
@@ -143,4 +139,5 @@ def HILLDESCENT_RANDOM_UPHILL(iterations: int, plan: np.array, week_plan: WeekPl
 			if best_energy < new_energy and retain:
 				best_energy = new_energy
 				best_plan = new_plan
+		print(best_energy)
 	return best_plan, best_energy

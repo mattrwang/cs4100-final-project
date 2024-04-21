@@ -18,7 +18,7 @@ def test_add_task_to_day():
     walk_park = Task('walk in park', 2, 0.416666, '1094 Beacon St, Newton, MA 02461', None, 'driving')
     tasks = [groceries, work_cafe, walk_park]  
     week_plan = WeekPlan(home, tasks)
-    new_day_plan, status, _, _, _ = week_plan.add_task_to_day(day_plan, 2, walk_park, 25, 30)
+    new_day_plan, status = week_plan.add_task_to_day(day_plan, 2, walk_park, 25, 30)
     actual_new_day_plan_google = np.array([0,0,0,0,0,0,0,0,0,0,-1,-1, 
                         1,1,1,1,1,1,0,0,0,0,0,-3, 
                         -3,3,3,3,3,3,0,0,-2,-2,-2,-2,
@@ -44,7 +44,7 @@ def test_add_task_to_day():
                          1,1,1,1,1,1,0,0,0,0,0,0,
                          0,0,0,0,0,0,0,0,0,-2,-2,-2,
                          2,2,2,2,2,2,2,2,2,2,2,2])
-    new_day_plan, status, _, _, _ = week_plan.add_task_to_day(day_plan, 2, walk_park, 1, 6)
+    new_day_plan, status = week_plan.add_task_to_day(day_plan, 2, walk_park, 1, 6)
     assert status == 1
     assert np.array_equiv(new_day_plan, actual_new_day_plan_est)
    
@@ -67,7 +67,7 @@ def test_add_task_to_day():
                          1,1,1,1,1,1,0,0,0,0,0,0,
                          0,0,0,0,0,0,0,0,0,-2,-2,-2,
                          2,2,0,0,0,-3,-3,3,3,3,3,-3])
-    new_day_plan, status, _, _, _ = week_plan.add_task_to_day(day_plan, 2, walk_park, 43, 47)
+    new_day_plan, status = week_plan.add_task_to_day(day_plan, 2, walk_park, 43, 47)
     assert status == 1
     assert np.array_equiv(new_day_plan, actual_new_day_plan_est)
 
@@ -77,7 +77,7 @@ def test_add_task_to_day():
     walk_park = Task('walk in park', 4, 1.0, None, ['sun', 9.0, 10.0],'driving')
     tasks = [groceries, walk_park]
     actual_new_day_plan = day_plan
-    new_day_plan, status, _, _, _ = week_plan.add_task_to_day(day_plan, 1, walk_park, 43, 47)
+    new_day_plan, status = week_plan.add_task_to_day(day_plan, 1, walk_park, 43, 47)
     assert status == 0
     assert np.array_equiv(new_day_plan, actual_new_day_plan)
 test_add_task_to_day()
@@ -141,7 +141,7 @@ def test_valid_plan():
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0]])
-    assert week_plan.valid_plan(plan)
+    assert week_plan.valid_day_tasks(plan)
     
     # case 2: missing one interval for task 3 (not valid)
     week_plan = WeekPlan(home, tasks)
@@ -180,5 +180,51 @@ def test_valid_plan():
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0]])
-    assert not week_plan.valid_plan(plan)
+    assert week_plan.valid_day_tasks(plan)
 test_valid_plan()
+
+
+plan = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, -1, -1, -1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -2, -2, 2, 2, 2, 2,
+        2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0],
+       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0],
+       [0, 0, 3, 3, 3, 3, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0],
+       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0],
+       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0],
+       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0],
+       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0]])
+
+groceries = Task('groceries', 3, 0.5, '647 Washington St, Newton, MA, 02458', ['Sunday', 10.0, 10.5], 'driving')
+work_cafe = Task('work cafe', 4, 1.0, '1334 Boylston Street, Boston, MA 02215', ['Sunday', None, None], 'driving')
+study_home = Task('study', 2, 0.5, '34 Halcyon Rd, Newton Centre, MA, 02459', None, 'driving')
+tasks = [groceries, work_cafe, study_home]
+week_plan = WeekPlan('34 Halcyon Rd, Newton Centre, MA, 02459', tasks)
+_, status = week_plan.add_task_to_day(plan[6], 2, tasks[2], 0, 6)
+print(status)
+print(plan)

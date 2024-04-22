@@ -27,6 +27,18 @@ def energy_function(plan: np.array, tasks: List[Task]) -> float:
 	return total_energy
 
 def swap_tasks(t1: int, t2: int, plan: np.array, week_plan: WeekPlan) -> Tuple[np.array, int]:
+	"""
+	 Swaps two tasks in a plan if possible iwth status 1 or else return the original plan with status 0.
+        
+		Args:
+            t1: index for first task to swap
+            t2: index for second task to swap
+			plan: plan to swap tasks in
+			week_plan: week plan class for the scheduling problem
+		Returns:
+		swapped_plan: new week plan with tasks swapped if possible or original plan if not
+		status: status of the swap (1 sucessful, 0 not)
+	"""
 	status = 1
 	swapped_plan = deepcopy(plan)
 	tasks = week_plan.tasks
@@ -64,6 +76,17 @@ def swap_tasks(t1: int, t2: int, plan: np.array, week_plan: WeekPlan) -> Tuple[n
 
 
 def HILLDESCENT(iterations: int, plan: np.array, week_plan: WeekPlan) -> Tuple[np.array, float]:
+	"""
+	 Runs hill descent for given number of iterations to find better plan with lower engergy.
+        
+		Args:
+            iterations: number of iterations to run for
+			plan: plan to optimize
+			week_plan: week plan class for the scheduling problem
+		Returns:
+		best_plan: new week plan with lowest energy found
+		best_energy: energy of best plan found
+	"""
 	best_plan = deepcopy(plan)
 	best_energy = energy_function(best_plan, week_plan.tasks)
 	non_fixed_tasks = [i for i in range(1, len(week_plan.tasks) + 1) if i not in week_plan.fixed_time_tasks]

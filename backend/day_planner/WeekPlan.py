@@ -20,9 +20,7 @@ class WeekPlan:
         self.plan = None # intialize plan for the week
         self.total_energy = -1 # intialize total energy of the week plan
         self.fixed_time_tasks = [i+1 for i, task in enumerate(tasks) if task.fixed_time is not None and task.fixed_time[1] is not None] 
-        self.day2int = {'Sunday': 0, 'Monday': 1, 'Tuesday':2, 'Wednesday':3, 'Thursday':4, 'Friday':5, 'Saturday':6}        
-
-    
+        self.day2int = {'Sunday': 0, 'Monday': 1, 'Tuesday':2, 'Wednesday':3, 'Thursday':4, 'Friday':5, 'Saturday':6}           
 
     def add_task_to_day(self, day_plan: np.array, t_i: int, task: Task, i_start: int, i_end: int) -> Tuple[np.array, int]:
         """
@@ -43,6 +41,7 @@ class WeekPlan:
         new_day_plan = deepcopy(day_plan)
         # Initialize status as complete
         status = 1
+        ints = set([i for i in new_day_plan if i>0])
         
         try:
             # Check if the task's time interval is occupied by another task
@@ -68,8 +67,9 @@ class WeekPlan:
                 if len(next_tasks_new_loc) > 0:
                     next_task_i = next_tasks_new_loc[0][2]
                     from_intvs = math.ceil(estimate_transport_time(task.location, next_tasks_new_loc[0][1], self.tasks[next_tasks_new_loc[0][0] - 1].mode) / 5)
-                    if np.all(new_day_plan[next_task_i - from_intvs:next_task_i] <= 0):
-                        new_day_plan[i_end:next_task_i] = 0
+                    if next_task_i-from_intvs >0 and np.all(new_day_plan[next_task_i - from_intvs:next_task_i] <= 0):
+                        # remove all transportation times between this and next location-based taskin a new location
+                        new_day_plan[i_end:next_task_i][new_day_plan[i_end:next_task_i] < 0] = 0
                         new_day_plan[next_task_i - from_intvs:next_task_i] = np.array([next_tasks_new_loc[0][0] * -1 for _ in range(from_intvs)])
                     else:
                         raise ValueError("Transportation timeslot is occupied")
@@ -82,13 +82,12 @@ class WeekPlan:
                     from_intvs = math.ceil(estimate_transport_time(task.location, self.home, task.mode) / 5)
                     if new_day_plan[i_rest:].shape[0] < from_intvs:
                         raise ValueError("Not enough time to get home")
-                    rest_day_plan[rest_day_plan.shape[0] - from_intvs:] = i_get_home
-                    new_day_plan[i_end:] = rest_day_plan
-                    
+                    else:
+                        rest_day_plan[rest_day_plan.shape[0] - from_intvs:] = i_get_home
+                        new_day_plan[i_end:] = rest_day_plan                    
         except ValueError as e:
             new_day_plan = day_plan
             status = 0
-        
         return new_day_plan, status
     
     def generate_random_plan_with_timeout(self, tasks: List[Task], timeout_sec=5) -> np.array:
@@ -152,6 +151,7 @@ class WeekPlan:
             new_day_plan, status = self.add_task_to_day(plan[day], j, task, i_start, i_end)
             # save new plan for the day
             plan[day] = new_day_plan
+            print(f'{task.name} scheduled')
         
         # assign fixed day tasks to their correct day and a random tipe
         for (j, task) in fixed_day_tasks:
@@ -170,22 +170,29 @@ class WeekPlan:
                 if status == 1:
                     reschedule = False
                     plan[day] = new_day_plan
+            print(f'{task.name} scheduled')
 
         # schedule remaining activities in random intervals
         for (j, task) in non_fixed_tasks:
             reschedule = True
+            # get duration of task in intervals
+            intv_duration = int(round(task.total_hours*12,1))
+            # find start indices where it would be possible to schedule the task (next itnervals free or transportation time)
+            free_intvs = []
+            for i, day in enumerate(plan):
+                for k, _ in enumerate(day[0:n-intv_duration]):
+                    if np.all(day[k:k+intv_duration] <= 0):
+                        free_intvs.append((i, k))
             while reschedule:
-                # get random day of week
-                day = random.randint(0, 6)
-                # get random index of start interval
-                i_start = random.randint(0, n)
+                # choose random day and start interval to schedule task in
+                day, i_start = random.choice(free_intvs)
                 # compute index of end interval
-                i_end = int(round(task.total_hours*12,1))+i_start
-                # add task to the day
+                i_end = intv_duration+i_start
                 new_day_plan, status = self.add_task_to_day(plan[day], j, task, i_start, i_end)
                 if status == 1:
                     reschedule = False
                     plan[day] = new_day_plan
+            print(f'{task.name} scheduled')
         return plan
     
     def valid_day_tasks(self, plan: np.array) -> bool:

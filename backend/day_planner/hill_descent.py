@@ -24,14 +24,12 @@ def energy_function(plan: np.array, tasks: List[Task]) -> float:
 	occ_intvs = [i for i in plan.flatten() if i!=0]
 	# compute total energy
 	total_energy = sum([mode2pe[tasks[abs(i)-1].mode]/12 if i<0 else tasks[i-1].pe/12 for i in occ_intvs])
-	# total_energy = np.sum(np.vectorize(lambda x: mode2pe[tasks[abs(x)-1].mode]/12 if x<0 else tasks[x-1].pe/12)(occ_intvs))
 	return total_energy
 
 def swap_tasks(t1: int, t2: int, plan: np.array, week_plan: WeekPlan) -> Tuple[np.array, int]:
 	status = 1
 	swapped_plan = deepcopy(plan)
 	tasks = week_plan.tasks
-
 	t1_day = np.where(np.any(swapped_plan == t1, axis=1))[0][0]
 	t2_day = np.where(np.any(swapped_plan == t2, axis=1))[0][0]
 
@@ -55,8 +53,8 @@ def swap_tasks(t1: int, t2: int, plan: np.array, week_plan: WeekPlan) -> Tuple[n
 		swapped_plan[t2_day][j] = 0
 		j += 1
 	new_t2_day, status1 = week_plan.add_task_to_day(swapped_plan[t2_day], t1-1, tasks[t1-1], t2_start, round(t2_start + tasks[t1-1].total_hours * 12))
-	new_t1_day, status2 = week_plan.add_task_to_day(swapped_plan[t1_day], t2-1, tasks[t2-1], t1_start, round(t1_start + tasks[t2-1].total_hours * 12))
 	swapped_plan[t2_day] = new_t2_day
+	new_t1_day, status2 = week_plan.add_task_to_day(swapped_plan[t1_day], t2-1, tasks[t2-1], t1_start, round(t1_start + tasks[t2-1].total_hours * 12))
 	swapped_plan[t1_day] = new_t1_day
 	if status1 == 1 and status2 == 1 and week_plan.valid_day_tasks(swapped_plan):
 		return swapped_plan, status
@@ -71,7 +69,7 @@ def HILLDESCENT(iterations: int, plan: np.array, week_plan: WeekPlan) -> Tuple[n
 	non_fixed_tasks = [i for i in range(1, len(week_plan.tasks) + 1) if i not in week_plan.fixed_time_tasks]
 	
 	for i in range(iterations):
-		print(f'iter {i}')
+		print(f'\titer {i+1}')
 		t1 = np.random.choice(non_fixed_tasks)
 		t2 = np.random.choice(non_fixed_tasks)
 		while t2 == t1:
@@ -115,7 +113,7 @@ def HILLDESCENT_RANDOM_UPHILL(iterations: int, plan: np.array, week_plan: WeekPl
 	non_fixed_tasks = [i for i in range(1, len(week_plan.tasks) + 1) if i not in week_plan.fixed_time_tasks]
 	
 	for i in range(iterations):
-		print(f'iter {i}')
+		print(f'\titer {i+1}')
 		t1 = np.random.choice(non_fixed_tasks)
 		t2 = np.random.choice(non_fixed_tasks)
 		while t2 == t1:
@@ -139,5 +137,4 @@ def HILLDESCENT_RANDOM_UPHILL(iterations: int, plan: np.array, week_plan: WeekPl
 			if best_energy < new_energy and retain:
 				best_energy = new_energy
 				best_plan = new_plan
-		print(best_energy)
 	return best_plan, best_energy

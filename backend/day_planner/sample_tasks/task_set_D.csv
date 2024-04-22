@@ -1,0 +1,41 @@
+Task,Perceived Energy,Location,Duration,Day,Time
+Task 1,1,"360 Huntington Ave, Boston, MA 02115",01:00,Monday,17:30,18:30
+Task 2,2,"795 Columbus Ave, Boston, MA 02120",01:00,Monday,12:30,13:30
+Task 3,5,"797 Columbus Ave, Boston, MA 02120",01:00,Tuesday,14:00,15:00
+Task 4,7,"100 Forsyth St, Boston, MA 02115",01:00,Wednesday,16:30,17:30
+Task 5,4,"35 Leon St, Boston, MA 02115",01:00,Thursday,18:30,19:30
+Task 6,2,"190 Newbury St, Boston, MA 02116",01:00,Friday,12:30,13:30
+Task 7,5,"1317 Commonwealth Ave, Allston, MA 02134",00:30,Saturday,18:30,19:00
+Task 8,7,"1317 Commonwealth Ave, Allston, MA 02134",01:00,Sunday,15:30,16:30
+Task 9,8,"190 Newbury St, Boston, MA 02116",00:30,Saturday,11:30,12:00
+Task 10,5,"360 Huntington Ave, Boston, MA 02115",00:30,Sunday,11:30,12:00
+Task 11,3,"360 Huntington Ave, Boston, MA 02115",00:30,,
+Task 12,2,"795 Columbus Ave, Boston, MA 02120",00:30,,
+Task 13,4,"797 Columbus Ave, Boston, MA 02120",01:00,,
+Task 14,6,"100 Forsyth St, Boston, MA 02115",00:30,,
+Task 15,7,"35 Leon St, Boston, MA 02115",01:00,,
+Task 16,9,"190 Newbury St, Boston, MA 02116",01:00,,
+Task 17,2,"1317 Commonwealth Ave, Allston, MA 02134",01:00,,
+Task 18,1,"1317 Commonwealth Ave, Allston, MA 02134",00:30,,
+Task 19,2,"190 Newbury St, Boston, MA 02116",01:00,,
+Task 20,5,,01:00,Tuesday,
+Task 21,1,,01:00,Wednesday,
+Task 22,2,,01:00,Monday,
+Task 23,5,,01:00,Thursday,
+Task 24,7,,01:00,Saturday,
+Task 25,4,,01:00,Friday,
+Task 26,2,,01:00,Sunday,
+Task 27,5,,00:30,Sunday,
+Task 28,7,,02:00,Tuesday,
+Task 29,8,,02:00,Thursday,
+Task 30,5,,00:30,,
+Task 31,3,,00:30,,
+Task 32,2,,00:30,,
+Task 33,4,,01:00,,
+Task 34,6,,01:00,,
+Task 35,7,,00:30,,
+Task 36,9,,00:30,,
+Task 37,2,,00:30,,
+Task 38,1,,00:30,,
+Task 39,2,,00:30,,
+Task 40,5,,00:30,,

@@ -115,7 +115,19 @@ def HILLDESCENT(iterations: int, plan: np.array, week_plan: WeekPlan) -> Tuple[n
 
 
 def HILLDESCENT_RANDOM_RESTART(num_searches: int, iterations: int, plan: np.array, week_plan: WeekPlan) -> Tuple[np.array, float]:
-    # initialize best plan and energy
+    """
+	 Runs hill descent for given number of iterations with random restarts to find better plan with lower engergy.
+        
+		Args:
+            num_searches: number of searches to restart and find a better plan
+			iterations: number of iterations to run for
+			plan: plan to optimize
+			week_plan: week plan class for the scheduling problem
+		Returns:
+		best_plan: new week plan with lowest energy found
+		best_energy: energy of best plan found
+	"""
+	# initialize best plan and energy
     best_plan = deepcopy(plan)
     best_energy = 1000000000000
 
@@ -131,6 +143,18 @@ def HILLDESCENT_RANDOM_RESTART(num_searches: int, iterations: int, plan: np.arra
     return best_plan, best_energy
 
 def HILLDESCENT_RANDOM_UPHILL(iterations: int, plan: np.array, week_plan: WeekPlan, p: float) -> Tuple[np.array, float]:
+	"""
+	 Runs hill descent for given number of iterations with random uphills to find better plan with lower engergy.
+        
+		Args:
+            iterations: number of iterations to run for
+			plan: plan to optimize
+			week_plan: week plan class for the scheduling problem
+			p: probability of accepting a plan with higher energy
+		Returns:
+		best_plan: new week plan with lowest energy found
+		best_energy: energy of best plan found
+	"""
 	best_plan = deepcopy(plan)
 	best_energy = energy_function(best_plan, week_plan.tasks)
 	non_fixed_tasks = [i for i in range(1, len(week_plan.tasks) + 1) if i not in week_plan.fixed_time_tasks]
